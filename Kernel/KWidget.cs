@@ -12,29 +12,32 @@ namespace XH
         public GameObject gameObject { get { return graphic.gameObject; }}
         public string name { get { return graphic.gameObject.name; }}
         public Material material { get { return graphic.material; }}
-        public Texture texture { get { return GetTexture(); }}
+        public Texture texture { get { return graphic.mainTexture; }}
 
-        private Graphic graphic = null;
+        private MaskableGraphic graphic = null;
         private KMesh mesh = null;
 
-        public KWidget(Graphic graphic, KMesh mesh, int hierarchyIndex)
+        public KWidget(MaskableGraphic graphic, KMesh mesh, int hierarchyIndex)
         {
             this.graphic = graphic;
             this.mesh = mesh;
             this.hierarchyIndex = hierarchyIndex;
         }
 
+        // 判断mesh是否有覆盖
         public bool MeshOverlap(KWidget widget)
         {
             return mesh.Overlap(widget.mesh);
         }
 
+        // 设置底层UI
         public void SetBottomWidget(KWidget widget)
         {
             bottom = widget;
             depth = CheckBatch(widget) ? widget.depth : widget.depth + 1;
         }
 
+        // 检查是否可以和另一个UI节点合批
         public bool CheckBatch(KWidget widget)
         {
             var mat1 = material;
@@ -52,26 +55,6 @@ namespace XH
             if (tex1.GetInstanceID() != tex2.GetInstanceID()) return false;
 
             return true;
-        }
-
-        private Texture GetTexture()
-        {
-            var go = graphic.gameObject;
-
-            var rawImage = go.GetComponent<RawImage>();
-            if (rawImage != null)
-            {
-                return rawImage.texture;
-            }
-
-            var image = go.GetComponent<Image>();
-            if (image != null)
-            {
-                var sprite = image.sprite;
-                return (sprite != null) ? sprite.texture : null;
-            }
-
-            return null;
         }
     }
 }

@@ -69,13 +69,15 @@ namespace XH
                 //     widgets.Add(new KWidget(graphic, mesh, hierarchyIndex));
                 // }
             }
+
+            // Analysis(widgets);
         }
 
-        private Mesh GetMesh(Graphic graphic)
+        private Mesh GetMesh(MaskableGraphic graphic)
         {
             try
             {
-                Type type = GetTypeByName<Graphic>("UnityEngine.UI.Graphic");
+                Type type = GetTypeByName<MaskableGraphic>("UnityEngine.UI.MaskableGraphic");
                 if (type != null)
                 {
                     var field = type.GetField("m_CachedMesh", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -107,11 +109,11 @@ namespace XH
         }
 
         // 深度优先遍历所有可见的子节点
-        private List<Graphic> GetActivedGraphic(GameObject root)
+        private List<MaskableGraphic> GetActivedGraphic(GameObject root)
         {
-            var graphics = new List<Graphic>();
+            var graphics = new List<MaskableGraphic>();
 
-            var children = root.GetComponentsInChildren<Graphic>(true);// TODO 不确定该函数是不是深度优先的，可能后面需要改
+            var children = root.GetComponentsInChildren<MaskableGraphic>(true);// TODO 不确定该函数是不是深度优先的，可能后面需要改
             foreach (var c in children)
             {
                 if (c.gameObject.activeInHierarchy)
