@@ -10,7 +10,7 @@ namespace XH
     public class UIMesh : BaseMeshEffect
     {
         public KMesh mesh { get; private set; } = null;
-        public Action<UIMesh> OnMeshChanged;
+        public Action OnMeshChanged;
 
         private void Awake()
         {
@@ -23,7 +23,7 @@ namespace XH
             vh.FillMesh(temp);
 
             mesh.Fill(temp);
-            OnMeshChanged(this);
+            OnMeshChanged();
         }
 
         private void OnDrawGizmos()

@@ -21,6 +21,9 @@ namespace XH
         {
             public Canvas canvas { get; private set; } = null;
             public List<VBatch> batches { get; } = new List<VBatch>();
+            public int gameObjectCount { get; private set; } = 0;
+            public int vertexCount { get; private set; } = 0;
+            public int batchCount { get { return batches.Count; }}
             public bool expand { get; set; } = true;
 
             public VCanvas(Canvas canvas)
@@ -32,6 +35,9 @@ namespace XH
             {
                 var vbatch = new VBatch(batch);
                 batches.Add(vbatch);
+
+                gameObjectCount += batch.widgetCount;
+                vertexCount += batch.vertexCount;
             }
         }
 
@@ -42,7 +48,7 @@ namespace XH
         [MenuItem("Window/UIBatch Analyzer")]
         static void Init()
         {
-            var window = GetWindow<UIBatchAnalyzerWindow>("UI合批分析");
+            var window = GetWindow<UIBatchAnalyzerWindow>("UGUI Batch");
             window.Show();
         }
 
@@ -55,8 +61,21 @@ namespace XH
             else
             {
                 scrollpos = EditorGUILayout.BeginScrollView(scrollpos);
-                // TODO 统计数据，例如顶点总数量，GameObject总数量等
-
+                // 统计数据，例如顶点总数量，GameObject总数量等
+                int canvasCount = groups.Count;
+                int gameObjectCount = 0;
+                int vertexCount = 0;
+                int batchCount = 0;
+                foreach (var group in groups)
+                {
+                    gameObjectCount += group.gameObjectCount;
+                    vertexCount += group.vertexCount;
+                    batchCount += group.batchCount;
+                }
+                EditorGUILayout.LabelField("Canvas Count", canvasCount.ToString());
+                EditorGUILayout.LabelField("GameObject Count", gameObjectCount.ToString());
+                EditorGUILayout.LabelField("Vertex Count", vertexCount.ToString());
+                EditorGUILayout.LabelField("Batch Count", batchCount.ToString());
                 // Canvas列表
                 foreach (var group in groups)
                 {
@@ -128,7 +147,9 @@ namespace XH
                 UIBatchAnalyzerGUI.BeginVerticalGroup();
                 {
                     EditorGUILayout.ObjectField("Canvas", group.canvas, typeof(Canvas));
-                    // TODO 还可以增加顶点总数量，GameObject总数量等
+                    // 顶点总数量，GameObject总数量等
+                    EditorGUILayout.LabelField("GameObject Count", group.gameObjectCount.ToString());
+                    EditorGUILayout.LabelField("Vertex Count", group.vertexCount.ToString());
                     EditorGUILayout.LabelField("Batch Count", batches.Count.ToString());
                     for (int i=0; i<batches.Count; i++)
                     {
@@ -151,19 +172,24 @@ namespace XH
                 UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Parameters");
                 {
                     EditorGUILayout.LabelField("Depth", value.depth.ToString());
+                    EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
                     EditorGUILayout.ObjectField("Material", value.material, typeof(Material));
                     EditorGUILayout.ObjectField("Texture", value.texture, typeof(Texture));
-                    // TODO 还可以增加顶点总数量，GameObject总数量等
                 }
                 UIBatchAnalyzerGUI.EndVerticalGroup();
                 // 节点列表
                 UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Widgets");
                 foreach (var w in value.widgets)
                 {
-                    EditorGUILayout.ObjectField(w.gameObject, typeof(GameObject));
+                    DrawWidget(w);
                 }
                 UIBatchAnalyzerGUI.EndVerticalGroup();
             }
+        }
+
+        private void DrawWidget(KWidget widget)
+        {
+            EditorGUILayout.ObjectField(widget.gameObject, typeof(GameObject));
         }
     }
 }

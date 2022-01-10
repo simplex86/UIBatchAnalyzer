@@ -9,6 +9,7 @@ namespace XH
     {
         public Transform transform { get; private set; } = null;
         public List<KTriangle> triangles { get; private set; } = new List<KTriangle>();
+        public int vertexCount { get; private set; } = 0;
 
         public KMesh(Transform transform)
         {
@@ -35,6 +36,8 @@ namespace XH
 
                 triangles.Add(new KTriangle(v1, v2, v3));
             }
+
+            vertexCount = mesh.vertexCount;
         }
 
         public bool Overlap(KMesh other)

@@ -50,7 +50,7 @@ namespace XH
                 hierarchyIndex++;
                 widgets.Add(new KWidget(graphic, mesh.mesh, hierarchyIndex));
 
-                mesh.OnMeshChanged = (ui) => {
+                mesh.OnMeshChanged = () => {
                     meshCounter++;
                     if (widgets.Count == meshCounter)
                     {

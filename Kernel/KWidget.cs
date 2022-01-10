@@ -13,6 +13,7 @@ namespace XH
         public string name { get { return graphic.gameObject.name; }}
         public Material material { get { return graphic.material; }}
         public Texture texture { get { return graphic.mainTexture; }}
+        public int vertexCount { get { return (mesh == null) ? 0 : mesh.vertexCount; }}
 
         private MaskableGraphic graphic = null;
         private KMesh mesh = null;

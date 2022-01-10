@@ -22,6 +22,10 @@ namespace XH
         {
             get { return (widgets.Count > 0) ? widgets[0].texture : null; }
         }
+        //
+        public int widgetCount { get { return widgets.Count; }}
+        //
+        public int vertexCount { get; private set; } = 0;
 
         public KBatch(Canvas canvas, int depth)
         {
@@ -32,6 +36,7 @@ namespace XH
         public void Add(KWidget widget)
         {
             widgets.Add(widget);
+            vertexCount += widget.vertexCount;
         }
 
         public bool Check(KWidget widget)
