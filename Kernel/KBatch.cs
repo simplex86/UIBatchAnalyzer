@@ -6,11 +6,26 @@ namespace XH
 {
     public class KBatch
     {
+        // Canvas
+        public Canvas canvas { get; private set; } = null;
+        // 深度
         public int depth { get; private set; } = 0;
+        // 子节点
         public List<KWidget> widgets { get; } = new List<KWidget>();
-
-        public KBatch(int depth)
+        // 材质
+        public Material material 
         {
+            get { return (widgets.Count > 0) ? widgets[0].material : null; }
+        }
+        // 纹理
+        public Texture texture 
+        {
+            get { return (widgets.Count > 0) ? widgets[0].texture : null; }
+        }
+
+        public KBatch(Canvas canvas, int depth)
+        {
+            this.canvas = canvas;
             this.depth = depth;
         }
 

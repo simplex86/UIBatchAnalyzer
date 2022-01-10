@@ -9,7 +9,6 @@ namespace XH
     public class KAnalyzer
     {
         public Action<List<KBatch>> OnCompleted;
-
         private List<KBatch> batches = new List<KBatch>();
 
         public void Analysis()
@@ -55,7 +54,7 @@ namespace XH
                     meshCounter++;
                     if (widgets.Count == meshCounter)
                     {
-                        Analysis(widgets);
+                        Analysis(canvas, widgets);
                     }
                 };
 
@@ -125,7 +124,7 @@ namespace XH
             return graphics;
         }
 
-        private void Analysis(List<KWidget> widgets)
+        private void Analysis(Canvas canvas, List<KWidget> widgets)
         {
             for (int i=0; i<widgets.Count-1; i++)
             {
@@ -144,7 +143,7 @@ namespace XH
                 }
             }
             Sort(widgets);
-            Batch(widgets);
+            Batch(canvas, widgets);
 
             OnCompleted(batches);
         }
@@ -171,31 +170,34 @@ namespace XH
                 // 按hierarchyIndex降序
                 return (a.hierarchyIndex < b.hierarchyIndex) ? 1 : -1;
             });
-
-            foreach (var w in widgets)
-            {
-                Debug.Log($"{w.name}:{w.depth}");
-            }
         }
 
-        private void Batch(List<KWidget> widgets)
+        private void Batch(Canvas canvas, List<KWidget> widgets)
         {
             foreach (var w in widgets)
             {
-                if (batches.Count == 0)
-                {
-                    var b = new KBatch(w.depth);
-                    batches.Add(b);
-                }
-                
-                var batch = batches[batches.Count - 1];
-                if (batch.depth != w.depth || !batch.Check(w))
-                {
-                    batch = new KBatch(w.depth);
-                    batches.Add(batch);
-                }
+                var batch = AllocBatch(canvas, w);
                 batch.Add(w);
             }
+        }
+
+        private KBatch AllocBatch(Canvas canvas, KWidget widget)
+        {
+            KBatch batch = (batches.Count == 0) ? AllocBatch(canvas, widget.depth) : batches[batches.Count - 1];
+            if (batch.depth != widget.depth || !batch.Check(widget))
+            {
+                batch = AllocBatch(canvas, widget.depth);
+            }
+
+            return batch;
+        }
+
+        private KBatch AllocBatch(Canvas canvas, int depth)
+        {
+            var batch = new KBatch(canvas, depth);
+            batches.Add(batch);
+            
+            return batch;
         }
     }
 }
