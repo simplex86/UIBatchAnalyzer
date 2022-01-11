@@ -8,8 +8,8 @@ namespace XH
 {
     public class KAnalyzer
     {
-        public Action<List<KBatch>> OnCompleted;
-        private List<KBatch> batches = new List<KBatch>();
+        public Action OnChanged;
+        public List<KBatch> batches = new List<KBatch>();
 
         public void Analysis()
         {
@@ -24,13 +24,22 @@ namespace XH
 
         public void Dispose()
         {
+            batches.Clear();
+
             var meshes = Transform.FindObjectsOfType<UIMesh>();
             foreach (var m in meshes)
             {
                 GameObject.DestroyImmediate(m);
             }
+
+            if (OnChanged != null)
+            {
+                OnChanged();
+            }
         }
 
+        // 暂时没有找到获取Mesh的方法，只能采用这种方案：
+        // 在Canvas下的Graphic子节点中注入UIMesh组件计算Mesh，因为是异步计算的，所以处理起来稍显麻烦。
         private void InjectCanvas(Canvas canvas)
         {
             var widgets = new List<KWidget>();
@@ -41,7 +50,7 @@ namespace XH
             foreach (var graphic in graphics)
             {
                 var mesh = graphic.gameObject.GetComponent<UIMesh>();
-                if (mesh != null)
+                if (mesh != null) // 如果不销毁，没有办法进行多次计算
                 {
                     GameObject.DestroyImmediate(mesh);
                 }
@@ -57,19 +66,7 @@ namespace XH
                         Analysis(canvas, widgets);
                     }
                 };
-
-                // var mm = GetMesh(graphic);
-                // if (mm != null)
-                // {
-                //     KMesh mesh = new KMesh(graphic.transform);
-                //     mesh.Fill(mm);
-
-                //     hierarchyIndex++;
-                //     widgets.Add(new KWidget(graphic, mesh, hierarchyIndex));
-                // }
             }
-
-            // Analysis(widgets);
         }
 
         private Mesh GetMesh(MaskableGraphic graphic)
@@ -82,7 +79,8 @@ namespace XH
                     var field = type.GetField("m_CachedMesh", BindingFlags.Instance | BindingFlags.NonPublic);
                     if (field != null)
                     {
-                        return field.GetValue(graphic) as Mesh;
+                        var mesh = field.GetValue(graphic) as Mesh;
+                        if (mesh != null) Debug.Log("ddddddddddd");
                     }
                 }
             }
@@ -145,7 +143,10 @@ namespace XH
             Sort(widgets);
             Batch(canvas, widgets);
 
-            OnCompleted(batches);
+            if (OnChanged != null)
+            {
+                OnChanged();
+            }
         }
 
         private void Sort(List<KWidget> widgets)
@@ -196,7 +197,7 @@ namespace XH
         {
             var batch = new KBatch(canvas, depth);
             batches.Add(batch);
-            
+
             return batch;
         }
     }

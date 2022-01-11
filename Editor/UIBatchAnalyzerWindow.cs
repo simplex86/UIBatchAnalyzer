@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -41,12 +42,11 @@ namespace XH
             }
         }
 
-        private KAnalyzer analyzer = new KAnalyzer();
         private List<VCanvas> groups = new List<VCanvas>();
         private Vector2 scrollpos = Vector2.zero;
 
         [MenuItem("Window/UIBatch Analyzer")]
-        static void Init()
+        private static void OnMenu()
         {
             var window = GetWindow<UIBatchAnalyzerWindow>("UGUI Batch");
             window.Show();
@@ -56,7 +56,7 @@ namespace XH
         {
             if (groups.Count == 0)
             {
-                EditorGUILayout.HelpBox("No Canvas", MessageType.Info);
+                EditorGUILayout.HelpBox("Empty", MessageType.Info);
             }
             else
             {
@@ -96,31 +96,24 @@ namespace XH
 
         private void OnDestroy()
         {
-            if (analyzer != null)
-            {
-                analyzer.Dispose();
-                analyzer = null;
-            }
+            UIBatchProvider.Instance.Dispose();
         }
 
         private void Analysis()
         {
-            if (analyzer != null)
+            UIBatchProvider.Instance.OnChanged = OnBatchChangedHandler;
+            UIBatchProvider.Instance.Analysis();
+        }
+
+        private void OnBatchChangedHandler(List<KBatch> batches)
+        {
+            groups.Clear();
+            foreach (var batch in batches)
             {
-                analyzer = new KAnalyzer();
+                var group = AllocGroup(batch.canvas);
+                group.AddBatch(batch);
             }
-
-            analyzer.OnCompleted = (batches) => {
-                groups.Clear();
-                foreach (var batch in batches)
-                {
-                    var group = AllocGroup(batch.canvas);
-                    group.AddBatch(batch);
-                }
-                Repaint();
-            };
-
-            analyzer.Analysis();
+            Repaint();
         }
 
         private VCanvas AllocGroup(Canvas canvas)

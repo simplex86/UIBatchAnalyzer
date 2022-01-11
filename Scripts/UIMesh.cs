@@ -19,11 +19,23 @@ namespace XH
 
         public override void ModifyMesh(VertexHelper vh)
         {
-            var temp = new Mesh();
-            vh.FillMesh(temp);
+            if (mesh != null)
+            {
+                var temp = new Mesh();
+                vh.FillMesh(temp);
 
-            mesh.Fill(temp);
-            OnMeshChanged();
+                mesh.Fill(temp);
+                if (OnMeshChanged != null)
+                {
+                    OnMeshChanged();
+                }
+            }
+        }
+
+        private void OnDestroy()
+        {
+            mesh = null;
+            OnMeshChanged = null;
         }
 
         private void OnDrawGizmos()
