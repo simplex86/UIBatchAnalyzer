@@ -31,7 +31,12 @@ namespace XH
         private static Color VER_GROUP_DEFAULT_COLOR = new Color(0.8f, 0.4f, 0.2f);
         public static void BeginVerticalGroup(string title)
         {
-            GUI.color = VER_GROUP_DEFAULT_COLOR;
+            BeginVerticalGroup(title, VER_GROUP_DEFAULT_COLOR);
+        }
+
+        public static void BeginVerticalGroup(string title, Color color)
+        {
+            GUI.color = color;
             GUILayout.Label(title, EditorStyles.helpBox);
             GUI.color = Color.white;
 

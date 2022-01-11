@@ -52,6 +52,8 @@ namespace XH
             window.Show();
         }
 
+        private static Color STATISTICS_TITLE_COLOR = new Color(1.0f, 1.0f, 0.0f);
+
         private void OnGUI()
         {
             if (groups.Count == 0)
@@ -72,10 +74,14 @@ namespace XH
                     vertexCount += group.vertexCount;
                     batchCount += group.batchCount;
                 }
-                EditorGUILayout.LabelField("Canvas Count", canvasCount.ToString());
-                EditorGUILayout.LabelField("GameObject Count", gameObjectCount.ToString());
-                EditorGUILayout.LabelField("Vertex Count", vertexCount.ToString());
-                EditorGUILayout.LabelField("Batch Count", batchCount.ToString());
+                UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Statistics", STATISTICS_TITLE_COLOR);
+                {
+                    EditorGUILayout.LabelField("Canvas Count", canvasCount.ToString());
+                    EditorGUILayout.LabelField("GameObject Count", gameObjectCount.ToString());
+                    EditorGUILayout.LabelField("Vertex Count", vertexCount.ToString());
+                    EditorGUILayout.LabelField("Batch Count", batchCount.ToString());
+                }
+                UIBatchAnalyzerGUI.EndVerticalGroup();
                 // Canvas列表
                 foreach (var group in groups)
                 {
@@ -165,9 +171,9 @@ namespace XH
                 UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Parameters");
                 {
                     EditorGUILayout.LabelField("Depth", value.depth.ToString());
-                    EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
                     EditorGUILayout.ObjectField("Material", value.material, typeof(Material));
                     EditorGUILayout.ObjectField("Texture", value.texture, typeof(Texture));
+                    EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
                 }
                 UIBatchAnalyzerGUI.EndVerticalGroup();
                 // 节点列表

@@ -46,7 +46,7 @@ namespace XH
             var meshCounter = 0;
             var hierarchyIndex = 0;
 
-            var graphics = GetActivedGraphic(canvas.gameObject);
+            var graphics = GetRenderabledGraphics(canvas);
             foreach (var graphic in graphics)
             {
                 var mesh = graphic.gameObject.GetComponent<UIMesh>();
@@ -105,21 +105,74 @@ namespace XH
             return null;
         }
 
-        // 深度优先遍历所有可见的子节点
-        private List<MaskableGraphic> GetActivedGraphic(GameObject root)
+        // 深度优先遍历所有可渲染的子节点
+        private List<MaskableGraphic> GetRenderabledGraphics(Canvas canvas)
         {
             var graphics = new List<MaskableGraphic>();
-
-            var children = root.GetComponentsInChildren<MaskableGraphic>(true);// TODO 不确定该函数是不是深度优先的，可能后面需要改
-            foreach (var c in children)
+            
+            if (canvas.gameObject.activeInHierarchy)
             {
-                if (c.gameObject.activeInHierarchy)
+                var transform = canvas.transform;
+                for (int i=0; i<transform.childCount; i++)
                 {
-                    graphics.Add(c);
+                    var child = transform.GetChild(i).gameObject;
+                    if (child.activeInHierarchy)
+                    {
+                        GetRenderabledGraphics(child, graphics);
+                    }
                 }
             }
 
             return graphics;
+        }
+
+        private void GetRenderabledGraphics(GameObject root, List<MaskableGraphic> list)
+        {
+            if (root.GetComponent<Canvas>() == null)
+            {
+                var graph = root.GetComponent<MaskableGraphic>();
+                if (IsRenderabledGraphic(graph))
+                {
+                    list.Add(graph);
+                }
+
+                var transform = root.transform;
+                for (int i=0; i<transform.childCount; i++)
+                {
+                    var child = transform.GetChild(i).gameObject;
+                    if (child.activeInHierarchy)
+                    {
+                        graph = child.GetComponent<MaskableGraphic>();
+                        if (IsRenderabledGraphic(graph))
+                        {
+                            list.Add(graph);
+                        }
+                        GetRenderabledGraphics(child, list);
+                    }
+                }
+            }
+        }
+
+        private bool IsRenderabledGraphic(MaskableGraphic graphic)
+        {
+            if (graphic == null)
+            {
+                return false;
+            }
+            // 不可见
+            if (!graphic.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+            // 透明
+            if (graphic.color.a < float.Epsilon)
+            {
+                return false;
+            }
+
+            // TODO 其他判断条件，比如：缩放值是否为0，mask的影响等等
+
+            return true;
         }
 
         private void Analysis(Canvas canvas, List<KWidget> widgets)
