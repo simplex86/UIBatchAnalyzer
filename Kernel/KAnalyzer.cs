@@ -18,7 +18,10 @@ namespace XH
             var canvases = Transform.FindObjectsOfType<Canvas>();
             foreach (var canvas in canvases)
             {
-                InjectCanvas(canvas);
+                if (canvas.gameObject.activeInHierarchy && canvas.enabled)
+                {
+                    InjectMesh(canvas);
+                }
             }
         }
 
@@ -40,7 +43,7 @@ namespace XH
 
         // 暂时没有找到获取Mesh的方法，只能采用这种方案：
         // 在Canvas下的Graphic子节点中注入UIMesh组件计算Mesh，因为是异步计算的，所以处理起来稍显麻烦。
-        private void InjectCanvas(Canvas canvas)
+        private void InjectMesh(Canvas canvas)
         {
             var widgets = new List<KWidget>();
             var meshCounter = 0;
@@ -80,7 +83,6 @@ namespace XH
                     if (field != null)
                     {
                         var mesh = field.GetValue(graphic) as Mesh;
-                        if (mesh != null) Debug.Log("ddddddddddd");
                     }
                 }
             }
@@ -142,11 +144,6 @@ namespace XH
                     var child = transform.GetChild(i).gameObject;
                     if (child.activeInHierarchy)
                     {
-                        graph = child.GetComponent<MaskableGraphic>();
-                        if (IsRenderabledGraphic(graph))
-                        {
-                            list.Add(graph);
-                        }
                         GetRenderabledGraphics(child, list);
                     }
                 }
@@ -159,20 +156,64 @@ namespace XH
             {
                 return false;
             }
+
+            var gameObject = graphic.gameObject;
+            var transform = gameObject.GetComponent<RectTransform>();
+
             // 不可见
-            if (!graphic.gameObject.activeInHierarchy)
+            if (!gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+            // 未启用
+            if (!graphic.enabled)
             {
                 return false;
             }
             // 透明
-            if (graphic.color.a < float.Epsilon)
+            var alpha = GetLossyAlpha(graphic);
+            if (alpha < float.Epsilon)
+            {
+                return false;
+            }
+            // 面积小于等于0
+            var rect = transform.rect;
+            if (rect.width * rect.height < float.Epsilon)
+            {
+                return false;
+            }
+            // X或Y的缩放值为0
+            var scale = transform.lossyScale;
+            if (Mathf.Abs(scale.x * scale.y) < float.Epsilon)
             {
                 return false;
             }
 
-            // TODO 其他判断条件，比如：缩放值是否为0，mask的影响等等
+            // TODO 其他判断条件，比如：Mask的影响等等
 
             return true;
+        }
+
+        private float GetLossyAlpha(MaskableGraphic graphic)
+        {
+            var alpha = graphic.color.a;
+
+            var parent = graphic.transform.parent;
+            while (parent != null)
+            {
+                var canvas = parent.GetComponent<Canvas>();
+                if (canvas != null) break;
+                
+                var canvasGroup = parent.GetComponent<CanvasGroup>();
+                if (canvasGroup != null)
+                {
+                    alpha *= canvasGroup.alpha;
+                }
+
+                parent = parent.parent;
+            }
+
+            return alpha;
         }
 
         private void Analysis(Canvas canvas, List<KWidget> widgets)
@@ -213,16 +254,16 @@ namespace XH
                 var m2 = b.material;
                 if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
                 if (m1.GetInstanceID() > m2.GetInstanceID()) return 1;
-                // 按纹理ID降序
+                // 按纹理ID升序
                 var t1 = a.texture;
                 var t2 = b.texture;
                 if (t1 != null && t2 != null)
                 {
-                    if (t1.GetInstanceID() < t2.GetInstanceID()) return 1;
-                    if (t1.GetInstanceID() > t2.GetInstanceID()) return -1;
+                    if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
+                    if (t1.GetInstanceID() > t2.GetInstanceID()) return 1;
                 }
-                // 按hierarchyIndex降序
-                return (a.hierarchyIndex < b.hierarchyIndex) ? 1 : -1;
+                // 按hierarchyIndex升序
+                return (a.hierarchyIndex < b.hierarchyIndex) ? -1 : 1;
             });
         }
 
