@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.U2D;
 
 namespace XH
 {
@@ -17,14 +18,19 @@ namespace XH
         {
             get { return (widgets.Count > 0) ? widgets[0].material : null; }
         }
+        // 图集
+        public SpriteAtlas spriteAtlas 
+        {
+            get { return (widgets.Count > 0) ? widgets[0].spriteAtlas : null; }
+        }
         // 纹理
         public Texture texture 
         {
             get { return (widgets.Count > 0) ? widgets[0].texture : null; }
         }
-        //
+        // 子控件数量
         public int widgetCount { get { return widgets.Count; }}
-        //
+        // 顶点数量
         public int vertexCount { get; private set; } = 0;
 
         public KBatch(Canvas canvas, int depth)

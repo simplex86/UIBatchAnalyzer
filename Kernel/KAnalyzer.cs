@@ -14,6 +14,7 @@ namespace XH
         public void Analysis()
         {
             batches.Clear();
+            KSpriteAtlas.Load();
 
             var canvases = Transform.FindObjectsOfType<Canvas>();
             foreach (var canvas in canvases)
@@ -28,6 +29,7 @@ namespace XH
         public void Dispose()
         {
             batches.Clear();
+            KSpriteAtlas.Clear();
 
             var meshes = Transform.FindObjectsOfType<UIMesh>();
             foreach (var m in meshes)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.U2D;
 using UnityEditor;
 
 namespace XH
@@ -74,7 +75,7 @@ namespace XH
                     vertexCount += group.vertexCount;
                     batchCount += group.batchCount;
                 }
-                UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Statistics", STATISTICS_TITLE_COLOR);
+                UIBatchAnalyzerGUI.BeginVerticalGroup("♨ Statistics", STATISTICS_TITLE_COLOR);
                 {
                     EditorGUILayout.LabelField("Canvas Count", canvasCount.ToString());
                     EditorGUILayout.LabelField("GameObject Count", gameObjectCount.ToString());
@@ -172,7 +173,14 @@ namespace XH
                 {
                     EditorGUILayout.LabelField("Depth", value.depth.ToString());
                     EditorGUILayout.ObjectField("Material", value.material, typeof(Material));
-                    EditorGUILayout.ObjectField("Texture", value.texture, typeof(Texture));
+                    if (value.spriteAtlas == null)
+                    {
+                        EditorGUILayout.ObjectField("Texture", value.texture, typeof(Texture));
+                    }
+                    else
+                    {
+                        EditorGUILayout.ObjectField("Sprite Atlas", value.spriteAtlas, typeof(SpriteAtlas));
+                    }
                     EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
                 }
                 UIBatchAnalyzerGUI.EndVerticalGroup();
