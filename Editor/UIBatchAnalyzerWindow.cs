@@ -171,7 +171,7 @@ namespace XH
                 // 参数列表
                 UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Parameters");
                 {
-                    EditorGUILayout.LabelField("Depth", value.depth.ToString());
+                    EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
                     EditorGUILayout.ObjectField("Material", value.material, typeof(Material));
                     if (value.spriteAtlas == null)
                     {
@@ -181,7 +181,6 @@ namespace XH
                     {
                         EditorGUILayout.ObjectField("Sprite Atlas", value.spriteAtlas, typeof(SpriteAtlas));
                     }
-                    EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
                 }
                 UIBatchAnalyzerGUI.EndVerticalGroup();
                 // 节点列表

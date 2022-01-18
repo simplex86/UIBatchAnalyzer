@@ -9,8 +9,6 @@ namespace XH
     {
         // Canvas
         public Canvas canvas { get; private set; } = null;
-        // 深度
-        public int depth { get; private set; } = 0;
         // 子节点
         public List<KWidget> widgets { get; } = new List<KWidget>();
         // 材质
@@ -33,10 +31,9 @@ namespace XH
         // 顶点数量
         public int vertexCount { get; private set; } = 0;
 
-        public KBatch(Canvas canvas, int depth)
+        public KBatch(Canvas canvas)
         {
             this.canvas = canvas;
-            this.depth = depth;
         }
 
         public void Add(KWidget widget)

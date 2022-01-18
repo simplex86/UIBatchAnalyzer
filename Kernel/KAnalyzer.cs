@@ -280,18 +280,18 @@ namespace XH
 
         private KBatch AllocBatch(Canvas canvas, KWidget widget)
         {
-            KBatch batch = (batches.Count == 0) ? AllocBatch(canvas, widget.depth) : batches[batches.Count - 1];
-            if (batch.depth != widget.depth || !batch.Check(widget))
+            KBatch batch = (batches.Count == 0) ? AllocBatch(canvas) : batches[batches.Count - 1];
+            if (!batch.Check(widget))
             {
-                batch = AllocBatch(canvas, widget.depth);
+                batch = AllocBatch(canvas);
             }
 
             return batch;
         }
 
-        private KBatch AllocBatch(Canvas canvas, int depth)
+        private KBatch AllocBatch(Canvas canvas)
         {
-            var batch = new KBatch(canvas, depth);
+            var batch = new KBatch(canvas);
             batches.Add(batch);
 
             return batch;
