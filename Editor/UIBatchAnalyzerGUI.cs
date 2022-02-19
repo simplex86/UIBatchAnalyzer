@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace XH
+namespace SimpleX
 {
-    class UIBatchAnalyzerGUI
+    class UIBatchProfilerGUI
     {
         public static bool ToggleGroup(string title, bool expand)
         {

@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.U2D;
 using UnityEditor;
 
-namespace XH
+namespace SimpleX
 {
-    class UIBatchAnalyzerWindow : EditorWindow
+    class UIBatchProfilerWindow : EditorWindow
     {
         class VBatch
         {
@@ -46,10 +46,10 @@ namespace XH
         private List<VCanvas> groups = new List<VCanvas>();
         private Vector2 scrollpos = Vector2.zero;
 
-        [MenuItem("Window/UIBatch Analyzer")]
+        [MenuItem("SimpleX/UIBatch Profiler")]
         private static void OnMenu()
         {
-            var window = GetWindow<UIBatchAnalyzerWindow>("UGUI Batch");
+            var window = GetWindow<UIBatchProfilerWindow>("UGUI Batch");
             window.Show();
         }
 
@@ -75,14 +75,14 @@ namespace XH
                     vertexCount += group.vertexCount;
                     batchCount += group.batchCount;
                 }
-                UIBatchAnalyzerGUI.BeginVerticalGroup("♨ Statistics", STATISTICS_TITLE_COLOR);
+                UIBatchProfilerGUI.BeginVerticalGroup("♨ Statistics", STATISTICS_TITLE_COLOR);
                 {
                     EditorGUILayout.LabelField("Canvas Count", canvasCount.ToString());
                     EditorGUILayout.LabelField("GameObject Count", gameObjectCount.ToString());
                     EditorGUILayout.LabelField("Vertex Count", vertexCount.ToString());
                     EditorGUILayout.LabelField("Batch Count", batchCount.ToString());
                 }
-                UIBatchAnalyzerGUI.EndVerticalGroup();
+                UIBatchProfilerGUI.EndVerticalGroup();
                 // Canvas列表
                 foreach (var group in groups)
                 {
@@ -141,10 +141,10 @@ namespace XH
         {
             var batches = group.batches;
 
-            group.expand = UIBatchAnalyzerGUI.ToggleGroup(title, GROUP_DEFAULT_COLOR, group.expand);
+            group.expand = UIBatchProfilerGUI.ToggleGroup(title, GROUP_DEFAULT_COLOR, group.expand);
             if (group.expand)
             {
-                UIBatchAnalyzerGUI.BeginVerticalGroup();
+                UIBatchProfilerGUI.BeginVerticalGroup();
                 {
                     EditorGUILayout.ObjectField("Canvas", group.canvas, typeof(Canvas));
                     // 顶点总数量，GameObject总数量等
@@ -156,7 +156,7 @@ namespace XH
                         DrawBatch($"Batch {i+1}", batches[i]);
                     }
                 }
-                UIBatchAnalyzerGUI.EndVerticalGroup();
+                UIBatchProfilerGUI.EndVerticalGroup();
             }
         }
 
@@ -165,11 +165,11 @@ namespace XH
         {
             var value = batch.batch;
 
-            batch.expand = UIBatchAnalyzerGUI.ToggleGroup(title, BATCH_DEFAULT_COLOR, batch.expand);
+            batch.expand = UIBatchProfilerGUI.ToggleGroup(title, BATCH_DEFAULT_COLOR, batch.expand);
             if (batch.expand)
             {
                 // 参数列表
-                UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Parameters");
+                UIBatchProfilerGUI.BeginVerticalGroup("≣ Parameters");
                 {
                     EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
                     EditorGUILayout.ObjectField("Material", value.material, typeof(Material));
@@ -182,14 +182,14 @@ namespace XH
                         EditorGUILayout.ObjectField("Sprite Atlas", value.spriteAtlas, typeof(SpriteAtlas));
                     }
                 }
-                UIBatchAnalyzerGUI.EndVerticalGroup();
+                UIBatchProfilerGUI.EndVerticalGroup();
                 // 节点列表
-                UIBatchAnalyzerGUI.BeginVerticalGroup("≣ Widgets");
+                UIBatchProfilerGUI.BeginVerticalGroup("≣ Widgets");
                 foreach (var w in value.widgets)
                 {
                     DrawWidget(w);
                 }
-                UIBatchAnalyzerGUI.EndVerticalGroup();
+                UIBatchProfilerGUI.EndVerticalGroup();
             }
         }
 

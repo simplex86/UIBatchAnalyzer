@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace XH
+namespace SimpleX
 {
     class UIBatchProvider
     {

@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
 
-namespace XH
+namespace SimpleX
 {
     public class KWidget
     {

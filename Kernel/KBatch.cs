@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.U2D;
 
-namespace XH
+namespace SimpleX
 {
     public class KBatch
     {

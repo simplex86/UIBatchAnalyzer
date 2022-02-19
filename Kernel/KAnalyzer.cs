@@ -4,7 +4,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace XH
+namespace SimpleX
 {
     public class KAnalyzer
     {
@@ -130,6 +130,7 @@ namespace XH
             return graphics;
         }
 
+        // 获得渲染列表
         private void GetRenderabledGraphics(GameObject root, List<MaskableGraphic> list)
         {
             if (root.GetComponent<Canvas>() == null)
@@ -152,6 +153,7 @@ namespace XH
             }
         }
 
+        // 是否会被渲染
         private bool IsRenderabledGraphic(MaskableGraphic graphic)
         {
             if (graphic == null)
@@ -196,23 +198,26 @@ namespace XH
             return true;
         }
 
+        // 获取alpha值（含CanvasGroup的影响）
+        // 在网上很多资料中，Graphic的color.a是否为0是会影响合批的, 但（在2020.3中）测试发现其实并没有影响，仅CanvasGroup的alpha值会影响合批
         private float GetLossyAlpha(MaskableGraphic graphic)
         {
-            var alpha = graphic.color.a;
+            var alpha = 1.0f; //graphic.color.a对合批没有影响
 
-            var parent = graphic.transform.parent;
-            while (parent != null)
+            var transform = graphic.transform;
+            while (true)
             {
-                var canvas = parent.GetComponent<Canvas>();
-                if (canvas != null) break;
-                
-                var canvasGroup = parent.GetComponent<CanvasGroup>();
-                if (canvasGroup != null)
+                var canvasGroup = transform.GetComponent<CanvasGroup>();
+                if (canvasGroup != null && canvasGroup.enabled)
                 {
                     alpha *= canvasGroup.alpha;
                 }
 
-                parent = parent.parent;
+                var canvas = transform.GetComponent<Canvas>();
+                if (canvas != null && canvasGroup.enabled) break;
+
+                transform = transform.parent;
+                if (transform == null) break;
             }
 
             return alpha;

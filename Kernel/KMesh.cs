@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace XH
+namespace SimpleX
 {
     public class KMesh
     {

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace XH
+namespace SimpleX
 {
     public class KTriangle
     {
