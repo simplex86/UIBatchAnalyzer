@@ -13,8 +13,7 @@ namespace SimpleX
 
         public void Analysis()
         {
-            batches.Clear();
-            KSpriteAtlas.Load();
+            Dispose();
 
             var canvases = Transform.FindObjectsOfType<Canvas>();
             foreach (var canvas in canvases)
@@ -36,11 +35,8 @@ namespace SimpleX
             {
                 GameObject.DestroyImmediate(m);
             }
-
-            if (OnChanged != null)
-            {
-                OnChanged();
-            }
+            
+            // OnChanged?.Invoke();
         }
 
         // 暂时没有找到获取Mesh的方法，只能采用这种方案：
@@ -74,40 +70,40 @@ namespace SimpleX
             }
         }
 
-        private Mesh GetMesh(MaskableGraphic graphic)
-        {
-            try
-            {
-                Type type = GetTypeByName<MaskableGraphic>("UnityEngine.UI.MaskableGraphic");
-                if (type != null)
-                {
-                    var field = type.GetField("m_CachedMesh", BindingFlags.Instance | BindingFlags.NonPublic);
-                    if (field != null)
-                    {
-                        var mesh = field.GetValue(graphic) as Mesh;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError(ex.Message);
-            }
-            return null;
-        }
-
-        private Type GetTypeByName<T>(string typename)
-        {
-            Type type = typeof(T);
-            Assembly assembly = Assembly.GetAssembly(type);
-            
-            Type[] types = assembly.GetTypes();
-            foreach (var t in types)
-            {
-                if (t.ToString() == typename) return t;
-            }
-            
-            return null;
-        }
+        // private Mesh GetMesh(MaskableGraphic graphic)
+        // {
+        //     try
+        //     {
+        //         Type type = GetTypeByName<MaskableGraphic>("UnityEngine.UI.MaskableGraphic");
+        //         if (type != null)
+        //         {
+        //             var field = type.GetField("m_CachedMesh", BindingFlags.Instance | BindingFlags.NonPublic);
+        //             if (field != null)
+        //             {
+        //                 var mesh = field.GetValue(graphic) as Mesh;
+        //             }
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Debug.LogError(ex.Message);
+        //     }
+        //     return null;
+        // }
+        //
+        // private Type GetTypeByName<T>(string typename)
+        // {
+        //     Type type = typeof(T);
+        //     Assembly assembly = Assembly.GetAssembly(type);
+        //     
+        //     Type[] types = assembly.GetTypes();
+        //     foreach (var t in types)
+        //     {
+        //         if (t.ToString() == typename) return t;
+        //     }
+        //     
+        //     return null;
+        // }
 
         // 深度优先遍历所有可渲染的子节点
         private List<MaskableGraphic> GetRenderabledGraphics(Canvas canvas)
@@ -244,10 +240,7 @@ namespace SimpleX
             Sort(widgets);
             Batch(canvas, widgets);
 
-            if (OnChanged != null)
-            {
-                OnChanged();
-            }
+            OnChanged?.Invoke();
         }
 
         private void Sort(List<KWidget> widgets)
@@ -285,7 +278,12 @@ namespace SimpleX
 
         private KBatch AllocBatch(Canvas canvas, KWidget widget)
         {
-            KBatch batch = (batches.Count == 0) ? AllocBatch(canvas) : batches[batches.Count - 1];
+            if (batches.Count == 0)
+            {
+                return AllocBatch(canvas);
+            }
+            
+            KBatch batch = batches[batches.Count - 1];
             if (!batch.Check(widget))
             {
                 batch = AllocBatch(canvas);

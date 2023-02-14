@@ -31,19 +31,16 @@ namespace SimpleX
 
         private void OnChangedHandler()
         {
-            if (OnChanged != null)
-            {
-                OnChanged(analyzer.batches);
-            }
+            OnChanged?.Invoke(analyzer.batches);
         }
 
         private void OnPlayModeStateChangedHandler(PlayModeStateChange state)
         {
-            Dispose();
+            analyzer.Dispose();
 
             if (state == PlayModeStateChange.EnteredPlayMode)
             {
-                Analysis(); // TODO 窗口上看不到数据，暂时还没调试
+                Analysis();
             }
         }
     }
