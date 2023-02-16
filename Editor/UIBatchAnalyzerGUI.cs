@@ -15,7 +15,7 @@ namespace SimpleX
             GUI.color = color;
             expand = GUILayout.Toggle(expand, "", EditorStyles.miniButton, GUILayout.Height(18));
             Rect rect = GUILayoutUtility.GetLastRect();
-            GUI.Label(new Rect(rect.x + 2, rect.y + 0, rect.width, rect.height), title);
+            GUI.Label(new Rect(rect.x + 5, rect.y + 0, rect.width, rect.height), title);
             GUI.color = Color.white;
 
             return expand;
@@ -28,7 +28,7 @@ namespace SimpleX
             GUILayout.Space(2);
         }
 
-        private static Color VER_GROUP_DEFAULT_COLOR = new Color(0.8f, 0.4f, 0.2f);
+        private static Color VER_GROUP_DEFAULT_COLOR = Color.white;
         public static void BeginVerticalGroup(string title)
         {
             BeginVerticalGroup(title, VER_GROUP_DEFAULT_COLOR);
@@ -49,6 +49,16 @@ namespace SimpleX
         {
             GUILayout.Space(2);
             EditorGUILayout.EndVertical();
+        }
+
+        public static void BeginIndent()
+        {
+            EditorGUI.indentLevel++;
+        }
+
+        public static void EndIndent()
+        {
+            EditorGUI.indentLevel--;
         }
     }
 }

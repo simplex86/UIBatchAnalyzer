@@ -10,7 +10,6 @@ namespace SimpleX
         private UIBatchAnalyzerCtrl ctrl;
         
         private Vector2 scrollpos = Vector2.zero;
-        private static readonly Color STATISTICS_TITLE_COLOR = new Color(1.0f, 1.0f, 0.0f);
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -22,120 +21,102 @@ namespace SimpleX
         {
             
         }
+        
+        public void OnDisable()
+        {
+            
+        }
 
         public void OnGUI()
         {
-            var groups = data.groups;
-            
-            if (groups.Count == 0)
+            OnToolbarGUI();
+                
+            if (data.groups.Count == 0)
             {
                 EditorGUILayout.HelpBox("Empty", MessageType.Info);
             }
             else
             {
                 scrollpos = EditorGUILayout.BeginScrollView(scrollpos);
-                // 统计数据，例如顶点总数量，GameObject总数量等
-                int canvasCount = groups.Count;
-                int gameObjectCount = 0;
-                int vertexCount = 0;
-                int batchCount = 0;
-                foreach (var group in groups)
                 {
-                    gameObjectCount += group.gameObjectCount;
-                    vertexCount += group.vertexCount;
-                    batchCount += group.batchCount;
-                }
-                UIBatchProfilerGUI.BeginVerticalGroup("♨ Statistics", STATISTICS_TITLE_COLOR);
-                {
-                    EditorGUILayout.LabelField("Canvas Count", canvasCount.ToString());
-                    EditorGUILayout.LabelField("GameObject Count", gameObjectCount.ToString());
-                    EditorGUILayout.LabelField("Vertex Count", vertexCount.ToString());
-                    EditorGUILayout.LabelField("Batch Count", batchCount.ToString());
-                }
-                UIBatchProfilerGUI.EndVerticalGroup();
-                // Canvas列表
-                foreach (var group in groups)
-                {
-                    var title = $"{group.canvas.gameObject.name} - {group.batches.Count}";
-                    DrawGroup(title, group);
+                    foreach (var group in data.groups)
+                    {
+                        OnCanvasGUI(group);
+                    }
                 }
                 EditorGUILayout.EndScrollView();
             }
-            GUILayout.FlexibleSpace();
+        }
 
-            GUI.color = Color.green;
-            if (GUILayout.Button("Analysis", GUILayout.Height(32)))
+        private void OnToolbarGUI()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             {
-                ctrl.Analysis();
+                if (GUILayout.Button("Analysis", EditorStyles.toolbarButton, GUILayout.Width(80)))
+                {
+                    ctrl.Analysis();
+                }
+                
+                GUILayout.FlexibleSpace();
             }
-            GUI.color = Color.white;
+            EditorGUILayout.EndHorizontal();
         }
 
-        public void OnDisable()
+        private void OnCanvasGUI(VCanvas group)
         {
-            
-        }
-        
-        private static Color GROUP_DEFAULT_COLOR = Color.magenta;
-        private void DrawGroup(string title, VCanvas group)
-        {
-            var batches = group.batches;
+            var canvas = group.canvas;
 
-            group.expand = UIBatchProfilerGUI.ToggleGroup(title, GROUP_DEFAULT_COLOR, group.expand);
+            group.expand = UIBatchProfilerGUI.ToggleGroup($"Canvas - {canvas.name}   |   Batch Count : {group.batchCount}", group.expand);
             if (group.expand)
             {
-                UIBatchProfilerGUI.BeginVerticalGroup();
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
                 {
-                    EditorGUILayout.ObjectField("Canvas", group.canvas, typeof(Canvas));
-                    // 顶点总数量，GameObject总数量等
-                    EditorGUILayout.LabelField("GameObject Count", group.gameObjectCount.ToString());
-                    EditorGUILayout.LabelField("Vertex Count", group.vertexCount.ToString());
-                    EditorGUILayout.LabelField("Batch Count", batches.Count.ToString());
-                    for (int i=0; i<batches.Count; i++)
+                    EditorGUILayout.ObjectField(canvas, typeof(Canvas));
+                    foreach (var batch in group.batches)
                     {
-                        DrawBatch($"Batch {i+1}", batches[i]);
+                        OnBatchGUI(batch);
                     }
                 }
-                UIBatchProfilerGUI.EndVerticalGroup();
+                EditorGUILayout.EndVertical();
             }
         }
 
-        private static Color BATCH_DEFAULT_COLOR = Color.cyan;
-        private void DrawBatch(string title, VBatch batch)
+        private void OnBatchGUI(VBatch batch)
         {
-            var value = batch.batch;
-
-            batch.expand = UIBatchProfilerGUI.ToggleGroup(title, BATCH_DEFAULT_COLOR, batch.expand);
+            var kbatch = batch.batch;
+            
+            batch.expand = EditorGUILayout.Foldout(batch.expand, $"Batch", true);
             if (batch.expand)
             {
-                // 参数列表
-                UIBatchProfilerGUI.BeginVerticalGroup("≣ Parameters");
+                UIBatchProfilerGUI.BeginIndent();
                 {
-                    EditorGUILayout.LabelField("Vertex Count", value.vertexCount.ToString());
-                    EditorGUILayout.ObjectField("Material", value.material, typeof(Material));
-                    if (value.spriteAtlas == null)
+                    EditorGUILayout.ObjectField("Material", kbatch.material, typeof(Material));
+                    if (kbatch.texture != null)
                     {
-                        EditorGUILayout.ObjectField("Texture", value.texture, typeof(Texture));
+                        EditorGUILayout.ObjectField("Texture", kbatch.texture, typeof(Texture));
                     }
-                    else
+                    else if (kbatch.spriteAtlas != null)
                     {
-                        EditorGUILayout.ObjectField("Sprite Atlas", value.spriteAtlas, typeof(SpriteAtlas));
+                        EditorGUILayout.ObjectField("Sprite Atlas", kbatch.spriteAtlas, typeof(SpriteAtlas));
                     }
+
+                    EditorGUILayout.LabelField("Widget List", EditorStyles.boldLabel);
+                    UIBatchProfilerGUI.BeginIndent();
+                    {
+                        foreach (var widget in kbatch.widgets)
+                        {
+                            OnWidgetGUI(widget);
+                        }
+                    }
+                    UIBatchProfilerGUI.EndIndent();
                 }
-                UIBatchProfilerGUI.EndVerticalGroup();
-                // 节点列表
-                UIBatchProfilerGUI.BeginVerticalGroup("≣ Widgets");
-                foreach (var w in value.widgets)
-                {
-                    DrawWidget(w);
-                }
-                UIBatchProfilerGUI.EndVerticalGroup();
+                UIBatchProfilerGUI.EndIndent();
             }
         }
 
-        private void DrawWidget(KWidget widget)
+        private void OnWidgetGUI(KWidget widget)
         {
-            EditorGUILayout.ObjectField(widget.gameObject, typeof(GameObject));
+            EditorGUILayout.ObjectField(widget.gameObject.name, widget.gameObject, typeof(GameObject));
         }
     }
 }
