@@ -8,25 +8,58 @@ namespace SimpleX
 {
     public class KAnalyzer
     {
+        private class WCanvas
+        {
+            public Canvas canvas { get; } = null;
+            public List<KWidget> widgets { get; } = new List<KWidget>();
+
+            public WCanvas(Canvas canvas)
+            {
+                this.canvas = canvas;
+            }
+        }
+        
+        private int totalMeshCount = 0;
+        private int injectMeshCount = 0;
+        private List<WCanvas> wcanvas = new List<WCanvas>();
+        
+        public List<KBatch> batches { get; }= new List<KBatch>();
         public Action OnChanged;
-        public List<KBatch> batches = new List<KBatch>();
 
         public void Analysis()
         {
             Dispose();
 
-            var canvases = Transform.FindObjectsOfType<Canvas>();
+            var canvases = Transform.FindObjectsOfType<Canvas>(false);
+            // 统计mesh数量
             foreach (var canvas in canvases)
             {
-                if (canvas.gameObject.activeInHierarchy && canvas.enabled)
+                if (IsCanvasEnabled(canvas))
+                {
+                    totalMeshCount += GetMeshCount(canvas);
+                }
+            }
+            // 注入mesh
+            foreach (var canvas in canvases)
+            {
+                if (IsCanvasEnabled(canvas))
                 {
                     InjectMesh(canvas);
                 }
             }
         }
 
+        // Canvas是否可用
+        private bool IsCanvasEnabled(Canvas canvas)
+        {
+            return canvas.gameObject.activeInHierarchy && canvas.enabled;
+        }
+
         public void Dispose()
         {
+            totalMeshCount = 0;
+            injectMeshCount = 0;
+            
             batches.Clear();
             KSpriteAtlas.Clear();
 
@@ -39,13 +72,18 @@ namespace SimpleX
             // OnChanged?.Invoke();
         }
 
+        // 获取canvas下可渲染的mesh数量
+        private int GetMeshCount(Canvas canvas)
+        {
+            var graphics = GetRenderabledGraphics(canvas);
+            return graphics.Count;
+        }
+
         // 暂时没有找到获取Mesh的方法，只能采用这种方案：
         // 在Canvas下的Graphic子节点中注入UIMesh组件计算Mesh，因为是异步计算的，所以处理起来稍显麻烦。
         private void InjectMesh(Canvas canvas)
         {
-            var widgets = new List<KWidget>();
-            var meshCounter = 0;
-            var hierarchyIndex = 0;
+            var renderOrder = 0;
 
             var graphics = GetRenderabledGraphics(canvas);
             foreach (var graphic in graphics)
@@ -57,69 +95,56 @@ namespace SimpleX
                 }
                 mesh = graphic.gameObject.AddComponent<UIMesh>();
 
-                hierarchyIndex++;
-                widgets.Add(new KWidget(graphic, mesh.mesh, hierarchyIndex));
+                renderOrder++;
 
+                var widgets = AllocWidgets(canvas);
+                widgets.Add(new KWidget(graphic, mesh.mesh, renderOrder));
+
+                // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
+                // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
                 mesh.OnMeshChanged = () => {
-                    meshCounter++;
-                    if (widgets.Count == meshCounter)
+                    injectMeshCount++;
+                    
+                    if (totalMeshCount == injectMeshCount)
                     {
-                        Analysis(canvas, widgets);
+                        foreach (var v in wcanvas)
+                        {
+                            Analysis(v.canvas, v.widgets);
+                        }
+                        OnChanged?.Invoke();
                     }
                 };
             }
         }
 
-        // private Mesh GetMesh(MaskableGraphic graphic)
-        // {
-        //     try
-        //     {
-        //         Type type = GetTypeByName<MaskableGraphic>("UnityEngine.UI.MaskableGraphic");
-        //         if (type != null)
-        //         {
-        //             var field = type.GetField("m_CachedMesh", BindingFlags.Instance | BindingFlags.NonPublic);
-        //             if (field != null)
-        //             {
-        //                 var mesh = field.GetValue(graphic) as Mesh;
-        //             }
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Debug.LogError(ex.Message);
-        //     }
-        //     return null;
-        // }
-        //
-        // private Type GetTypeByName<T>(string typename)
-        // {
-        //     Type type = typeof(T);
-        //     Assembly assembly = Assembly.GetAssembly(type);
-        //     
-        //     Type[] types = assembly.GetTypes();
-        //     foreach (var t in types)
-        //     {
-        //         if (t.ToString() == typename) return t;
-        //     }
-        //     
-        //     return null;
-        // }
+        private List<KWidget> AllocWidgets(Canvas canvas)
+        {
+            foreach (var v in wcanvas)
+            {
+                if (v.canvas == canvas)
+                {
+                    return v.widgets;
+                }
+            }
+
+            var c = new WCanvas(canvas);
+            wcanvas.Add(c);
+
+            return c.widgets;
+        }
 
         // 深度优先遍历所有可渲染的子节点
         private List<MaskableGraphic> GetRenderabledGraphics(Canvas canvas)
         {
             var graphics = new List<MaskableGraphic>();
-            
-            if (canvas.gameObject.activeInHierarchy)
+
+            var transform = canvas.transform;
+            for (int i = 0; i < transform.childCount; i++)
             {
-                var transform = canvas.transform;
-                for (int i=0; i<transform.childCount; i++)
+                var child = transform.GetChild(i).gameObject;
+                if (child.activeInHierarchy)
                 {
-                    var child = transform.GetChild(i).gameObject;
-                    if (child.activeInHierarchy)
-                    {
-                        GetRenderabledGraphics(child, graphics);
-                    }
+                    GetRenderabledGraphics(child, graphics);
                 }
             }
 
@@ -203,15 +228,18 @@ namespace SimpleX
             var transform = graphic.transform;
             while (true)
             {
-                var canvasGroup = transform.GetComponent<CanvasGroup>();
-                if (canvasGroup != null && canvasGroup.enabled)
-                {
-                    alpha *= canvasGroup.alpha;
-                }
-
                 var canvas = transform.GetComponent<Canvas>();
-                if (canvas != null && canvasGroup.enabled) break;
+                if (canvas != null && canvas.enabled)
+                {
+                    var canvasGroup = transform.GetComponent<CanvasGroup>();
+                    if (canvasGroup != null && canvasGroup.enabled)
+                    {
+                        alpha *= canvasGroup.alpha;
+                    }
 
+                    break;
+                }
+                
                 transform = transform.parent;
                 if (transform == null) break;
             }
@@ -230,7 +258,7 @@ namespace SimpleX
                     if (b.MeshOverlap(a))
                     {
                         var c = b.bottom;
-                        if (c == null || c.hierarchyIndex < a.hierarchyIndex)
+                        if (c == null || c.renderOrder < a.renderOrder)
                         {
                             b.SetBottomWidget(a);
                         }
@@ -239,10 +267,9 @@ namespace SimpleX
             }
             Sort(widgets);
             Batch(canvas, widgets);
-
-            OnChanged?.Invoke();
         }
 
+        // 排序
         private void Sort(List<KWidget> widgets)
         {
             widgets.Sort((a, b) => {
@@ -262,8 +289,8 @@ namespace SimpleX
                     if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
                     if (t1.GetInstanceID() > t2.GetInstanceID()) return 1;
                 }
-                // 按hierarchyIndex升序
-                return (a.hierarchyIndex < b.hierarchyIndex) ? -1 : 1;
+                // 按renderOrder升序
+                return (a.renderOrder < b.renderOrder) ? -1 : 1;
             });
         }
 

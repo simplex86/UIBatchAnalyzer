@@ -7,7 +7,7 @@ namespace SimpleX
 {
     public class KWidget
     {
-        public int hierarchyIndex { get; private set; } = 0;
+        public int renderOrder { get; private set; } = 0;
         public KWidget bottom { get; private set; } = null;
         public int depth { get; private set; } = 0;
         public GameObject gameObject { get { return graphic.gameObject; }}
@@ -21,12 +21,12 @@ namespace SimpleX
         private KRenderAsset renderAsset = null;
         private KMesh mesh = null;
 
-        public KWidget(MaskableGraphic graphic, KMesh mesh, int hierarchyIndex)
+        public KWidget(MaskableGraphic graphic, KMesh mesh, int renderOrder)
         {
             this.graphic = graphic;
             this.renderAsset = new KRenderAsset(graphic);
             this.mesh = mesh;
-            this.hierarchyIndex = hierarchyIndex;
+            this.renderOrder = renderOrder;
         }
 
         // 判断mesh是否有覆盖

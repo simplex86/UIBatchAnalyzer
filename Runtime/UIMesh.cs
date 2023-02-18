@@ -38,16 +38,16 @@ namespace SimpleX
             OnMeshChanged = null;
         }
 
-        private void OnDrawGizmos()
-        {
-            Gizmos.color = Color.red;
-            foreach (var t in mesh.triangles)
-            {
-                for(int i=0; i<3; i++)
-                {
-                    Gizmos.DrawLine(t[i + 0], t[i + 1]);
-                }
-            }
-        }
+        // private void OnDrawGizmos()
+        // {
+        //     Gizmos.color = Color.red;
+        //     foreach (var t in mesh.triangles)
+        //     {
+        //         for(int i=0; i<3; i++)
+        //         {
+        //             Gizmos.DrawLine(t[i + 0], t[i + 1]);
+        //         }
+        //     }
+        // }
     }
 }

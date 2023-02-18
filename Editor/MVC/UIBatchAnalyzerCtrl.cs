@@ -7,6 +7,8 @@ namespace SimpleX
     {
         private UIBatchAnalyzerData data;
 
+        public System.Action callback = null;
+
         public UIBatchAnalyzerCtrl(UIBatchAnalyzerData data)
         {
             this.data = data;
@@ -22,9 +24,9 @@ namespace SimpleX
             UIBatchProvider.Instance.OnChanged = null;
         }
         
-        public void Analysis()
+        public void Analysis(System.Action callback)
         {
-            
+            this.callback = callback;
             UIBatchProvider.Instance.Analysis();
         }
         
@@ -36,10 +38,11 @@ namespace SimpleX
                 var group = AllocGroup(batch.canvas);
                 group.AddBatch(batch);
             }
-            // Repaint();
+            
+            callback?.Invoke();
         }
         
-        private VCanvas AllocGroup(Canvas canvas)
+        private kCanvas AllocGroup(Canvas canvas)
         {
             var groups = data.groups;
             
@@ -48,7 +51,7 @@ namespace SimpleX
                 if (g.canvas == canvas) return g;
             }
 
-            var group = new VCanvas(canvas);
+            var group = new kCanvas(canvas);
             groups.Add(group);
 
             return group;

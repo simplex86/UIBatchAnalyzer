@@ -10,6 +10,9 @@ namespace SimpleX
         private UIBatchAnalyzerCtrl ctrl;
         
         private Vector2 scrollpos = Vector2.zero;
+        private SimpleTreeView batchview = null;
+
+        private object selectedItem = null;
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -19,7 +22,10 @@ namespace SimpleX
 
         public void OnEnable()
         {
+            scrollpos = Vector2.zero;
             
+            batchview = new SimpleTreeView();
+            batchview.onSelectionChanged = OnSelectionChangedHandler;
         }
         
         public void OnDisable()
@@ -29,94 +35,150 @@ namespace SimpleX
 
         public void OnGUI()
         {
-            OnToolbarGUI();
-                
             if (data.groups.Count == 0)
             {
-                EditorGUILayout.HelpBox("Empty", MessageType.Info);
+                EditorGUILayout.HelpBox("Click 'Sample' button to XXXX", MessageType.Info);
+                
+                GUI.color = Color.green;
+                if (GUILayout.Button("Sample"))
+                {
+                    OnAnalysis();
+                }
+                GUI.color = Color.white;
             }
             else
             {
-                scrollpos = EditorGUILayout.BeginScrollView(scrollpos);
+                EditorGUILayout.BeginHorizontal();
                 {
-                    foreach (var group in data.groups)
-                    {
-                        OnCanvasGUI(group);
-                    }
+                    OnBatchesViewGUI();
+                    OnDetailsViewGUI();
                 }
-                EditorGUILayout.EndScrollView();
+                EditorGUILayout.EndHorizontal();
             }
         }
 
-        private void OnToolbarGUI()
+        private void OnAnalysis()
         {
-            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            batchview.Clear();
+            selectedItem = null;
+            
+            ctrl.Analysis(() =>
             {
-                if (GUILayout.Button("Analysis", EditorStyles.toolbarButton, GUILayout.Width(80)))
+                RebuildBatchView();
+            });
+        }
+
+        private void RebuildBatchView()
+        {
+            foreach (var group in data.groups)
+            {
+                var canvasItem = new SimpleTreeViewItem(group.canvas.name);
+                canvasItem.what = group;
+
+                foreach (var batch in group.batches)
                 {
-                    ctrl.Analysis();
+                    var batchItem = new SimpleTreeViewItem("Batch");
+                    batchItem.what = batch;
+
+                    foreach (var widget in batch.widgets)
+                    {
+                        var widgetItem = new SimpleTreeViewItem(widget.name);
+                        widgetItem.what = widget;
+                        
+                        batchItem.AddChild(widgetItem);
+                    }
+                    
+                    canvasItem.AddChild(batchItem);
                 }
                 
-                GUILayout.FlexibleSpace();
+                batchview.AddChild(canvasItem);
             }
-            EditorGUILayout.EndHorizontal();
+            
+            if (data.groups.Count > 0)
+            {
+                batchview.Reload();
+                batchview.ExpandAll();
+            }
         }
 
-        private void OnCanvasGUI(VCanvas group)
+        private void OnBatchesViewGUI()
         {
-            var canvas = group.canvas;
-
-            group.expand = UIBatchProfilerGUI.ToggleGroup($"Canvas - {canvas.name}   |   Batch Count : {group.batchCount}", group.expand);
-            if (group.expand)
+            EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true));
             {
-                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                var rect = EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(true));
                 {
-                    EditorGUILayout.ObjectField(canvas, typeof(Canvas));
-                    foreach (var batch in group.batches)
+                    scrollpos = EditorGUILayout.BeginScrollView(scrollpos);
                     {
-                        OnBatchGUI(batch);
+                        batchview.OnGUI(new Rect(rect));
                     }
+                    EditorGUILayout.EndScrollView();
                 }
                 EditorGUILayout.EndVertical();
-            }
-        }
 
-        private void OnBatchGUI(VBatch batch)
-        {
-            var kbatch = batch.batch;
-            
-            batch.expand = EditorGUILayout.Foldout(batch.expand, $"Batch", true);
-            if (batch.expand)
-            {
-                UIBatchProfilerGUI.BeginIndent();
+                if (GUILayout.Button("Sample"))
                 {
-                    EditorGUILayout.ObjectField("Material", kbatch.material, typeof(Material));
-                    if (kbatch.texture != null)
-                    {
-                        EditorGUILayout.ObjectField("Texture", kbatch.texture, typeof(Texture));
-                    }
-                    else if (kbatch.spriteAtlas != null)
-                    {
-                        EditorGUILayout.ObjectField("Sprite Atlas", kbatch.spriteAtlas, typeof(SpriteAtlas));
-                    }
-
-                    EditorGUILayout.LabelField("Widget List", EditorStyles.boldLabel);
-                    UIBatchProfilerGUI.BeginIndent();
-                    {
-                        foreach (var widget in kbatch.widgets)
-                        {
-                            OnWidgetGUI(widget);
-                        }
-                    }
-                    UIBatchProfilerGUI.EndIndent();
+                    OnAnalysis();
                 }
-                UIBatchProfilerGUI.EndIndent();
             }
+            EditorGUILayout.EndVertical();
         }
 
+        private void OnDetailsViewGUI()
+        {
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.ExpandHeight(true), GUILayout.Width(400));
+            {
+                if (selectedItem == null)
+                {
+                    EditorGUILayout.HelpBox("Select a item please, and the information will be shown here", MessageType.Info);
+                }
+                else if (selectedItem is kCanvas)
+                {
+                    OnCanvasGUI(selectedItem as kCanvas);
+                }
+                else if (selectedItem is KBatch)
+                {
+                    OnBatchGUI(selectedItem as KBatch);
+                }
+                else if (selectedItem is KWidget)
+                {
+                    OnWidgetGUI(selectedItem as KWidget);
+                }
+            }
+            EditorGUILayout.EndVertical();
+        }
+
+        private void OnCanvasGUI(kCanvas canvas)
+        {
+            EditorGUILayout.ObjectField("Canvas", canvas.canvas, typeof(Canvas));
+            EditorGUILayout.Space(4);
+            EditorGUILayout.TextField("Batch Count", canvas.batchCount.ToString());
+            EditorGUILayout.TextField("Widget Count", canvas.widgetCount.ToString());
+            EditorGUILayout.TextField("Vertex Count", canvas.vertexCount.ToString());
+        }
+        
+        private void OnBatchGUI(KBatch batch)
+        {
+            EditorGUILayout.ObjectField("Material", batch.material, typeof(GameObject));
+            EditorGUILayout.ObjectField("Texture", batch.texture, typeof(Texture));
+            EditorGUILayout.Space(4);
+            EditorGUILayout.TextField("Widget Count", batch.widgetCount.ToString());
+            EditorGUILayout.TextField("Vertex Count", batch.vertexCount.ToString());
+        }
+        
         private void OnWidgetGUI(KWidget widget)
         {
-            EditorGUILayout.ObjectField(widget.gameObject.name, widget.gameObject, typeof(GameObject));
+            EditorGUILayout.ObjectField("Widget", widget.gameObject, typeof(GameObject));
+            EditorGUILayout.ObjectField("Material", widget.material, typeof(Material));
+            EditorGUILayout.ObjectField("Texture", widget.texture, typeof(Texture));
+            EditorGUILayout.Space(4);
+            EditorGUILayout.TextField("Depth", widget.depth.ToString());
+            EditorGUILayout.TextField("Render Order", widget.renderOrder.ToString());
+            EditorGUILayout.TextField("Vertex Count", widget.vertexCount.ToString());
+        }
+
+        private void OnSelectionChangedHandler(object seleced)
+        {
+            selectedItem = seleced;
         }
     }
 }
