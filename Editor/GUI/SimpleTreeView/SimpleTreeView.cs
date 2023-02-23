@@ -29,7 +29,12 @@ namespace SimpleX
         {
             if (root.children != null)
             {
+                for (int i = 0; i < root.children.Count; i++)
+                {
+                    root[i].Clear();
+                }
                 root.children.Clear();
+                
                 Reload();
             }
         }

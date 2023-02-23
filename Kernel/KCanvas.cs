@@ -5,11 +5,11 @@ namespace SimpleX
 {
     public class kCanvas
     {
-        public Canvas canvas { get; private set; } = null;
+        public Canvas canvas { get; } = null;
         public List<KBatch> batches { get; } = new List<KBatch>();
-        public int widgetCount { get; private set; } = 0;
+        public int instructionCount { get; private set; } = 0;
         public int vertexCount { get; private set; } = 0;
-        public int batchCount { get { return batches.Count; }}
+        public int batchCount => batches.Count;
 
         public kCanvas(Canvas canvas)
         {
@@ -20,7 +20,7 @@ namespace SimpleX
         {
             batches.Add(batch);
 
-            widgetCount += batch.widgetCount;
+            instructionCount += batch.instructionCount;
             vertexCount += batch.vertexCount;
         }
     }

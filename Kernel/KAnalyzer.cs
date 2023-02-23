@@ -11,7 +11,7 @@ namespace SimpleX
         private class WCanvas
         {
             public Canvas canvas { get; } = null;
-            public List<KWidget> widgets { get; } = new List<KWidget>();
+            public List<KInstruction> instructions { get; } = new List<KInstruction>();
 
             public WCanvas(Canvas canvas)
             {
@@ -23,7 +23,7 @@ namespace SimpleX
         private int injectMeshCount = 0;
         private List<WCanvas> wcanvas = new List<WCanvas>();
         
-        public List<KBatch> batches { get; }= new List<KBatch>();
+        public List<KBatch> batches { get; } = new List<KBatch>();
         public Action OnChanged;
 
         public void Analysis()
@@ -96,9 +96,20 @@ namespace SimpleX
                 mesh = graphic.gameObject.AddComponent<UIMesh>();
 
                 renderOrder++;
-
-                var widgets = AllocWidgets(canvas);
-                widgets.Add(new KWidget(graphic, mesh.mesh, renderOrder));
+                var instructions = AllocInstructions(canvas);
+                
+                var mask = graphic.GetComponent<Mask>();
+                if (mask == null)
+                {
+                    instructions.Add(new KInstruction(graphic, graphic.materialForRendering, mesh.mesh, renderOrder, false, false));
+                }
+                else
+                {
+                    instructions.Add(new KInstruction(graphic, graphic.materialForRendering, mesh.mesh, renderOrder, true, false));
+                    
+                    var unmaskMaterial = GetUnmaskMaterial(mask);
+                    instructions.Add(new KInstruction(graphic, unmaskMaterial, mesh.mesh, renderOrder, false, true));
+                }
 
                 // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
                 // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
@@ -109,7 +120,7 @@ namespace SimpleX
                     {
                         foreach (var v in wcanvas)
                         {
-                            Analysis(v.canvas, v.widgets);
+                            Analysis(v.canvas, v.instructions);
                         }
                         OnChanged?.Invoke();
                     }
@@ -117,20 +128,26 @@ namespace SimpleX
             }
         }
 
-        private List<KWidget> AllocWidgets(Canvas canvas)
+        private List<KInstruction> AllocInstructions(Canvas canvas)
         {
             foreach (var v in wcanvas)
             {
                 if (v.canvas == canvas)
                 {
-                    return v.widgets;
+                    return v.instructions;
                 }
             }
 
             var c = new WCanvas(canvas);
             wcanvas.Add(c);
 
-            return c.widgets;
+            return c.instructions;
+        }
+
+        private Material GetUnmaskMaterial(Mask mask)
+        {
+            var mUnmaskMaterial = mask.GetType().GetField("m_UnmaskMaterial", BindingFlags.NonPublic | BindingFlags.Instance);
+            return mUnmaskMaterial.GetValue(mask) as Material;
         }
 
         // 深度优先遍历所有可渲染的子节点
@@ -214,7 +231,7 @@ namespace SimpleX
                 return false;
             }
 
-            // TODO 其他判断条件，比如：Mask的影响等等
+            // TODO 其他判断条件，比如：UI不在一个平面上等
 
             return true;
         }
@@ -247,14 +264,14 @@ namespace SimpleX
             return alpha;
         }
 
-        private void Analysis(Canvas canvas, List<KWidget> widgets)
+        private void Analysis(Canvas canvas, List<KInstruction> instructions)
         {
-            for (int i=0; i<widgets.Count-1; i++)
+            for (int i=0; i<instructions.Count-1; i++)
             {
-                var a = widgets[i];
-                for (int j=i+1; j<widgets.Count; j++)
+                var a = instructions[i];
+                for (int j=i+1; j<instructions.Count; j++)
                 {
-                    var b = widgets[j];
+                    var b = instructions[j];
                     if (b.MeshOverlap(a))
                     {
                         var c = b.bottom;
@@ -265,45 +282,64 @@ namespace SimpleX
                     }
                 }
             }
-            Sort(widgets);
-            Batch(canvas, widgets);
+            Sort(instructions);
+            Batch(canvas, instructions);
         }
 
         // 排序
-        private void Sort(List<KWidget> widgets)
+        private void Sort(List<KInstruction> instructions)
         {
-            widgets.Sort((a, b) => {
-                // 按depth升序
-                if (a.depth < b.depth) return -1;
-                if (a.depth > b.depth) return 1;
-                // 按材质ID升序
-                var m1 = a.material;
-                var m2 = b.material;
-                if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
-                if (m1.GetInstanceID() > m2.GetInstanceID()) return 1;
-                // 按纹理ID升序
-                var t1 = a.texture;
-                var t2 = b.texture;
-                if (t1 != null && t2 != null)
+            instructions.Sort((a, b) => {
+                if (a.isUnmask && b.isUnmask)
                 {
-                    if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
-                    if (t1.GetInstanceID() > t2.GetInstanceID()) return 1;
+                    return SortUnmask(a, b);
                 }
-                // 按renderOrder升序
-                return (a.renderOrder < b.renderOrder) ? -1 : 1;
+
+                return Sort(a, b);
             });
         }
 
-        private void Batch(Canvas canvas, List<KWidget> widgets)
+        private int Sort(KInstruction a, KInstruction b)
         {
-            foreach (var w in widgets)
+            // 按depth升序
+            if (a.depth < b.depth) return -1;
+            if (a.depth > b.depth) return  1;
+            // 按材质ID升序
+            var m1 = a.material;
+            var m2 = b.material;
+            if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
+            if (m1.GetInstanceID() > m2.GetInstanceID()) return  1;
+            // 按纹理ID升序
+            var t1 = a.texture;
+            var t2 = b.texture;
+            if (t1 != null && t2 != null)
             {
-                var batch = AllocBatch(canvas, w);
-                batch.Add(w);
+                if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
+                if (t1.GetInstanceID() > t2.GetInstanceID()) return  1;
+            }
+            // 按renderOrder升序
+            return (a.renderOrder < b.renderOrder) ? -1 : 1;
+        }
+
+        private int SortUnmask(KInstruction a, KInstruction b)
+        {
+            // unmask
+            if (!a.isUnmask &&  b.isUnmask) return -1;
+            if ( a.isUnmask && !b.isUnmask) return  1;
+            
+            return Sort(b, a);
+        }
+
+        private void Batch(Canvas canvas, List<KInstruction> instructions)
+        {
+            foreach (var ins in instructions)
+            {
+                var batch = AllocBatch(canvas, ins);
+                batch.Add(ins);
             }
         }
 
-        private KBatch AllocBatch(Canvas canvas, KWidget widget)
+        private KBatch AllocBatch(Canvas canvas, KInstruction instruction)
         {
             if (batches.Count == 0)
             {
@@ -311,7 +347,7 @@ namespace SimpleX
             }
             
             KBatch batch = batches[batches.Count - 1];
-            if (!batch.Check(widget))
+            if (!batch.Check(instruction))
             {
                 batch = AllocBatch(canvas);
             }

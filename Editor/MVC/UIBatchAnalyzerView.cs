@@ -80,12 +80,12 @@ namespace SimpleX
                     var batchItem = new SimpleTreeViewItem("Batch");
                     batchItem.what = batch;
 
-                    foreach (var widget in batch.widgets)
+                    foreach (var instruction in batch.instructions)
                     {
-                        var widgetItem = new SimpleTreeViewItem(widget.name);
-                        widgetItem.what = widget;
+                        var instructionItem = new SimpleTreeViewItem(instruction.name);
+                        instructionItem.what = instruction;
                         
-                        batchItem.AddChild(widgetItem);
+                        batchItem.AddChild(instructionItem);
                     }
                     
                     canvasItem.AddChild(batchItem);
@@ -115,10 +115,12 @@ namespace SimpleX
                 }
                 EditorGUILayout.EndVertical();
 
+                GUI.color = Color.green;
                 if (GUILayout.Button("Sample"))
                 {
                     OnAnalysis();
                 }
+                GUI.color = Color.white;
             }
             EditorGUILayout.EndVertical();
         }
@@ -139,9 +141,9 @@ namespace SimpleX
                 {
                     OnBatchGUI(selectedItem as KBatch);
                 }
-                else if (selectedItem is KWidget)
+                else if (selectedItem is KInstruction)
                 {
-                    OnWidgetGUI(selectedItem as KWidget);
+                    OnInstructionGUI(selectedItem as KInstruction);
                 }
             }
             EditorGUILayout.EndVertical();
@@ -152,7 +154,7 @@ namespace SimpleX
             EditorGUILayout.ObjectField("Canvas", canvas.canvas, typeof(Canvas));
             EditorGUILayout.Space(4);
             EditorGUILayout.TextField("Batch Count", canvas.batchCount.ToString());
-            EditorGUILayout.TextField("Widget Count", canvas.widgetCount.ToString());
+            EditorGUILayout.TextField("Instruction Count", canvas.instructionCount.ToString());
             EditorGUILayout.TextField("Vertex Count", canvas.vertexCount.ToString());
         }
         
@@ -161,19 +163,21 @@ namespace SimpleX
             EditorGUILayout.ObjectField("Material", batch.material, typeof(GameObject));
             EditorGUILayout.ObjectField("Texture", batch.texture, typeof(Texture));
             EditorGUILayout.Space(4);
-            EditorGUILayout.TextField("Widget Count", batch.widgetCount.ToString());
+            EditorGUILayout.TextField("Instruction Count", batch.instructionCount.ToString());
             EditorGUILayout.TextField("Vertex Count", batch.vertexCount.ToString());
         }
         
-        private void OnWidgetGUI(KWidget widget)
+        private void OnInstructionGUI(KInstruction instruction)
         {
-            EditorGUILayout.ObjectField("Widget", widget.gameObject, typeof(GameObject));
-            EditorGUILayout.ObjectField("Material", widget.material, typeof(Material));
-            EditorGUILayout.ObjectField("Texture", widget.texture, typeof(Texture));
+            EditorGUILayout.ObjectField("Game Object", instruction.gameObject, typeof(GameObject));
+            EditorGUILayout.Toggle("Mask", instruction.isMask);
+            EditorGUILayout.Toggle("Unmask", instruction.isUnmask);
+            EditorGUILayout.ObjectField("Material", instruction.material, typeof(Material));
+            EditorGUILayout.ObjectField("Texture", instruction.texture, typeof(Texture));
             EditorGUILayout.Space(4);
-            EditorGUILayout.TextField("Depth", widget.depth.ToString());
-            EditorGUILayout.TextField("Render Order", widget.renderOrder.ToString());
-            EditorGUILayout.TextField("Vertex Count", widget.vertexCount.ToString());
+            EditorGUILayout.TextField("Depth", instruction.depth.ToString());
+            EditorGUILayout.TextField("Render Order", instruction.renderOrder.ToString());
+            EditorGUILayout.TextField("Vertex Count", instruction.vertexCount.ToString());
         }
 
         private void OnSelectionChangedHandler(object seleced)

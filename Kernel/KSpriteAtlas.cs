@@ -9,22 +9,24 @@ using UnityEditor;
 
 public class KSpriteAtlas
 {
-    private static List<SpriteAtlas> assets = new List<SpriteAtlas>();
+    private static List<SpriteAtlas> assets = new List<SpriteAtlas>(50);
 
     public static void Load()
     {
         Clear();
 
         var files = Directory.GetFiles(Application.dataPath, "*.*", SearchOption.AllDirectories).Where((s) => {
-            if (s.Contains("Editor/")) return false;
-            return s.EndsWith(".spriteatlas");
+            return s.Contains("Editor/") ? false : s.ToLower().EndsWith(".spriteatlas");
         });
 
         foreach (var file in files)
         {
             var path = "Assets" + file.Substring(Application.dataPath.Length).Replace("\\", "/");
             var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(path);
-            if (atlas != null) assets.Add(atlas);
+            if (atlas != null)
+            {
+                assets.Add(atlas);
+            }
         }
     }
 
