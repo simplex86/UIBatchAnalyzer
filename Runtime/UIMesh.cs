@@ -37,17 +37,22 @@ namespace SimpleX
             mesh = null;
             OnMeshChanged = null;
         }
-
-        // private void OnDrawGizmos()
-        // {
-        //     Gizmos.color = Color.red;
-        //     foreach (var t in mesh.triangles)
-        //     {
-        //         for(int i=0; i<3; i++)
-        //         {
-        //             Gizmos.DrawLine(t[i + 0], t[i + 1]);
-        //         }
-        //     }
-        // }
+        
+#if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            var defaultColor = Gizmos.color;
+            
+            Gizmos.color = Color.red;
+            foreach (var t in mesh.triangles)
+            {
+                for(int i=0; i<3; i++)
+                {
+                    Gizmos.DrawLine(t[i + 0], t[i + 1]);
+                }
+            }
+            Gizmos.color = defaultColor;
+        }
+#endif
     }
 }

@@ -46,7 +46,7 @@ namespace SimpleX
         }
 
         // 设置底层UI
-        public void SetBottomWidget(KInstruction instruction)
+        public void SetBottom(KInstruction instruction)
         {
             bottom = instruction;
             depth = CheckBatch(instruction) ? instruction.depth : instruction.depth + 1;

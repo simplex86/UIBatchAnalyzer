@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 namespace SimpleX
@@ -6,8 +6,9 @@ namespace SimpleX
     public class UIBatchAnalyzerCtrl
     {
         private UIBatchAnalyzerData data;
-
-        public System.Action callback = null;
+        
+        private KAnalyzer analyzer = null;
+        private Action callback = null;
 
         public UIBatchAnalyzerCtrl(UIBatchAnalyzerData data)
         {
@@ -16,24 +17,27 @@ namespace SimpleX
         
         public void OnEnable()
         {
-            UIBatchProvider.Instance.OnChanged = OnBatchChangedHandler;
+            analyzer = new KAnalyzer();
+            analyzer.OnChanged = OnBatchChangedHandler;
         }
 
         public void OnDisable()
         {
-            UIBatchProvider.Instance.OnChanged = null;
+            analyzer.OnChanged = null;
+            analyzer.Dispose();
         }
         
-        public void Analysis(System.Action callback)
+        public void Analysis(Action callback)
         {
             this.callback = callback;
-            UIBatchProvider.Instance.Analysis();
+            analyzer.Analysis();
         }
         
-        private void OnBatchChangedHandler(List<KBatch> batches)
+        private void OnBatchChangedHandler()
         {
             data.groups.Clear();
-            foreach (var batch in batches)
+            
+            foreach (var batch in analyzer.batches)
             {
                 var group = AllocGroup(batch.canvas);
                 group.AddBatch(batch);

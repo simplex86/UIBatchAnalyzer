@@ -17,7 +17,7 @@ namespace SimpleX
 
         public bool Overlap(KTriangle other)
         {
-            // 边相交
+            // 边是否相交
             for (int i=0; i<3; i++)
             {
                 var a1 = this[i + 0];
@@ -30,19 +30,22 @@ namespace SimpleX
                     if (IsIntersectant(a1, a2, b1, b2)) return true;
                 }
             }
-            // 包含点
+            // 点是否包含：
+            // 1、先判断三角形A的点是否在三角形B内
+            // 2、再判断三角形B的点是否在三角形A内
             for (int i=0; i<3; i++)
             {
-                if (IsContains(other[i])) return true;
+                if (this.IsContains2(other[i])) return true;
+            }
+            for (int i=0; i<3; i++)
+            {
+                if (other.IsContains2(this[i])) return true;
             }
 
             return false;
         }
 
-        public Vector3 this[int index]
-        {
-            get { return vertices[index % 3]; }
-        }
+        public Vector3 this[int index] => vertices[index % 3];
 
         // 线段(a1,a2)和(b1, b2)是否相交
         private bool IsIntersectant(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2)
@@ -80,10 +83,33 @@ namespace SimpleX
             return false; // 直线相交但交点不在线段上
         }
 
-        private const float DEVIATION = 0.05f; // 误差
-
         // 点(p)是否在三角形内
         private bool IsContains(Vector3 p)
+        {
+            var ab = vertices[1] - vertices[0];
+            var bc = vertices[2] - vertices[1];
+            var ca = vertices[0] - vertices[2];
+            
+            var ap = p - vertices[0];
+            var bp = p - vertices[1];
+            var cp = p - vertices[2];
+
+            var c1 = Mathf.Sign(Vector3.Cross(ab, ap).z);
+            var c2 = Mathf.Sign(Vector3.Cross(bc, bp).z);
+            var c3 = Mathf.Sign(Vector3.Cross(ca, cp).z);
+
+            if (Mathf.Approximately(c1, c2) && Mathf.Approximately(c2, c3) && Mathf.Approximately(c1, c3))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        
+        private const float DEVIATION = 0.05f; // 误差
+
+        // 点(p)是否在三角形内（据说相比较IsContains函数，精度高一些）
+        private bool IsContains2(Vector3 p)
         {
             var d1 = vertices[1] - vertices[0];
             var d2 = vertices[2] - vertices[1];

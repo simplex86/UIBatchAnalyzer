@@ -45,7 +45,7 @@ namespace SimpleX
 
         private void OnDestroy()
         {
-            UIBatchProvider.Instance.Dispose();
+            
         }
     }
 }

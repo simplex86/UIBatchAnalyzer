@@ -61,6 +61,7 @@ namespace SimpleX
             injectMeshCount = 0;
             
             batches.Clear();
+            wcanvas.Clear();
             KSpriteAtlas.Clear();
 
             var meshes = Transform.FindObjectsOfType<UIMesh>();
@@ -68,8 +69,6 @@ namespace SimpleX
             {
                 GameObject.DestroyImmediate(m);
             }
-            
-            // OnChanged?.Invoke();
         }
 
         // 获取canvas下可渲染的mesh数量
@@ -144,6 +143,7 @@ namespace SimpleX
             return c.instructions;
         }
 
+        // 获取UnMask阶段的Material
         private Material GetUnmaskMaterial(Mask mask)
         {
             var mUnmaskMaterial = mask.GetType().GetField("m_UnmaskMaterial", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -277,7 +277,7 @@ namespace SimpleX
                         var c = b.bottom;
                         if (c == null || c.renderOrder < a.renderOrder)
                         {
-                            b.SetBottomWidget(a);
+                            b.SetBottom(a);
                         }
                     }
                 }
