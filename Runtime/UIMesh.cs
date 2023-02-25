@@ -5,10 +5,11 @@ using UnityEngine.UI;
 
 namespace SimpleX
 {
-    // [HideInInspector]
+    [HideInInspector]
     [DisallowMultipleComponent]
     public class UIMesh : BaseMeshEffect
     {
+#if UNITY_EDITOR
         public KMesh mesh { get; private set; } = null;
         public Action OnMeshChanged;
 
@@ -36,22 +37,6 @@ namespace SimpleX
         {
             mesh = null;
             OnMeshChanged = null;
-        }
-        
-#if UNITY_EDITOR
-        private void OnDrawGizmos()
-        {
-            var defaultColor = Gizmos.color;
-            
-            Gizmos.color = Color.red;
-            foreach (var t in mesh.triangles)
-            {
-                for(int i=0; i<3; i++)
-                {
-                    Gizmos.DrawLine(t[i + 0], t[i + 1]);
-                }
-            }
-            Gizmos.color = defaultColor;
         }
 #endif
     }

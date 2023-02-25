@@ -34,6 +34,7 @@ namespace SimpleX
         private void OnGUI()
         {
             view?.OnGUI();
+            this.Repaint();
         }
 
         private void OnDisable()

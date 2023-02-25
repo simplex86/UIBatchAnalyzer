@@ -26,11 +26,16 @@ namespace SimpleX
             
             batchview = new SimpleTreeView();
             batchview.onSelectionChanged = OnSelectionChangedHandler;
+
+            SceneView.duringSceneGui += OnSceneGUI;
         }
         
         public void OnDisable()
         {
+            batchview.onSelectionChanged = null;
+            batchview = null;
             
+            SceneView.duringSceneGui -= OnSceneGUI;
         }
 
         public void OnGUI()
@@ -54,7 +59,14 @@ namespace SimpleX
                     OnDetailsViewGUI();
                 }
                 EditorGUILayout.EndHorizontal();
+
+                if (selectedItem != null)
+                {
+                    SceneView.RepaintAll();
+                }
             }
+            
+            ctrl.Tick();
         }
 
         private void OnAnalysis()
@@ -178,6 +190,63 @@ namespace SimpleX
             EditorGUILayout.TextField("Depth", instruction.depth.ToString());
             EditorGUILayout.TextField("Render Order", instruction.renderOrder.ToString());
             EditorGUILayout.TextField("Vertex Count", instruction.vertexCount.ToString());
+        }
+        
+        private void OnSceneGUI(SceneView sceneView)
+        {
+            if (selectedItem != null)
+            {
+                var defaultColor = Handles.color;
+
+                Handles.color = Color.red;
+                {
+                    if (selectedItem is kCanvas)
+                    {
+                        OnDrawCanvasGizmos(selectedItem as kCanvas);
+                    }
+                    else if (selectedItem is KBatch)
+                    {
+                        OnDrawBatchGizmos(selectedItem as KBatch);
+                    }
+                    else if (selectedItem is KInstruction)
+                    {
+                        OnDrawInstructionGizmos(selectedItem as KInstruction);
+                    }
+                }
+                Handles.color = defaultColor;
+            }
+        }
+
+        private void OnDrawCanvasGizmos(kCanvas canvas)
+        {
+            foreach (var batch in canvas.batches)
+            {
+                OnDrawBatchGizmos(batch);
+            }
+        }
+        
+        private void OnDrawBatchGizmos(KBatch batch)
+        {
+            foreach (var instruction in batch.instructions)
+            {
+                OnDrawInstructionGizmos(instruction);
+            }
+        }
+        
+        private void OnDrawInstructionGizmos(KInstruction instruction)
+        {
+            OnDrawMeshGizmos(instruction.mesh);
+        }
+
+        private void OnDrawMeshGizmos(KMesh mesh)
+        {
+            foreach (var t in mesh.triangles)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    Handles.DrawLine(t[i + 0], t[i + 1]);
+                }
+            }
         }
 
         private void OnSelectionChangedHandler(object seleced)

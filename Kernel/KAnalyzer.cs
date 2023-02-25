@@ -22,9 +22,10 @@ namespace SimpleX
         private int totalMeshCount = 0;
         private int injectMeshCount = 0;
         private List<WCanvas> wcanvas = new List<WCanvas>();
-        
-        public List<KBatch> batches { get; } = new List<KBatch>();
-        public Action OnChanged;
+        private List<KBatch> batches = new List<KBatch>();
+
+        public bool ready { get; private set; } = false;
+        public Action<List<KBatch>> OnChanged;
 
         public void Analysis()
         {
@@ -49,6 +50,20 @@ namespace SimpleX
             }
         }
 
+        public void Tick()
+        {
+            if (ready)
+            {
+                foreach (var v in wcanvas)
+                {
+                    Analysis(v.canvas, v.instructions);
+                }
+                OnChanged?.Invoke(batches);
+                
+                Dispose();
+            }
+        }
+
         // Canvas是否可用
         private bool IsCanvasEnabled(Canvas canvas)
         {
@@ -57,6 +72,7 @@ namespace SimpleX
 
         public void Dispose()
         {
+            ready = false;
             totalMeshCount = 0;
             injectMeshCount = 0;
             
@@ -117,11 +133,7 @@ namespace SimpleX
                     
                     if (totalMeshCount == injectMeshCount)
                     {
-                        foreach (var v in wcanvas)
-                        {
-                            Analysis(v.canvas, v.instructions);
-                        }
-                        OnChanged?.Invoke();
+                        ready = true;
                     }
                 };
             }

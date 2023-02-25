@@ -13,6 +13,7 @@ namespace SimpleX
         public GameObject gameObject => graphic.gameObject;
         public string name => graphic.gameObject.name;
 
+        public KMesh mesh { get; }= null;
         public Material material { get; } = null;
         public bool isMask { get; } = false;
         public bool isUnmask { get; } = false;
@@ -21,7 +22,7 @@ namespace SimpleX
         public int vertexCount => (mesh == null) ? 0 : mesh.vertexCount;
         
         private MaskableGraphic graphic = null;
-        private KMesh mesh = null;
+        
 
         public KInstruction(MaskableGraphic graphic, Material material, KMesh mesh, int renderOrder, bool isMask = false, bool isUnmask = false)
         {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SimpleX
@@ -32,12 +33,17 @@ namespace SimpleX
             this.callback = callback;
             analyzer.Analysis();
         }
+
+        public void Tick()
+        {
+            analyzer?.Tick();
+        }
         
-        private void OnBatchChangedHandler()
+        private void OnBatchChangedHandler(List<KBatch> batches)
         {
             data.groups.Clear();
             
-            foreach (var batch in analyzer.batches)
+            foreach (var batch in batches)
             {
                 var group = AllocGroup(batch.canvas);
                 group.AddBatch(batch);
