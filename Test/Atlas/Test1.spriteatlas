@@ -6,7 +6,7 @@ SpriteAtlas:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: color2
+  m_Name: Test1
   m_EditorData:
     serializedVersion: 2
     textureSettings:
@@ -28,21 +28,24 @@ SpriteAtlas:
       allowAlphaSplitting: 0
       enableRotation: 0
       enableTightPacking: 1
+      enableAlphaDilation: 0
     secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
-    - {fileID: 21300000, guid: c72c31fe86ff5bc4ea1f43aa6f295f09, type: 3}
-    - {fileID: 21300000, guid: d051c3c74daf9a5499558cf0b5150a33, type: 3}
+    - {fileID: 21300000, guid: 63d4d19dc979b38498ac8f6234790afe, type: 3}
+    - {fileID: 21300000, guid: 915f98705d133974a94217401f0ee17f, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
-  - {fileID: 21300000, guid: d051c3c74daf9a5499558cf0b5150a33, type: 3}
-  - {fileID: 21300000, guid: c72c31fe86ff5bc4ea1f43aa6f295f09, type: 3}
+  - {fileID: 21300000, guid: 915f98705d133974a94217401f0ee17f, type: 3}
+  - {fileID: 21300000, guid: ef77040967f13564a82da387b511ffe3, type: 3}
+  - {fileID: 21300000, guid: 63d4d19dc979b38498ac8f6234790afe, type: 3}
   m_PackedSpriteNamesToIndex:
-  - green
-  - blue
+  - red
+  - pink
+  - yellow
   m_RenderDataMap: {}
-  m_Tag: color2
+  m_Tag: LoginUI
   m_IsVariant: 0

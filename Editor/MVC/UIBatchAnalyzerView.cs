@@ -40,16 +40,11 @@ namespace SimpleX
 
         public void OnGUI()
         {
+            OnToolbarGUI();
+        
             if (data.groups.Count == 0)
             {
                 EditorGUILayout.HelpBox("Click 'Sample' button to XXXX", MessageType.Info);
-                
-                GUI.color = Color.green;
-                if (GUILayout.Button("Sample"))
-                {
-                    OnAnalysis();
-                }
-                GUI.color = Color.white;
             }
             else
             {
@@ -67,6 +62,25 @@ namespace SimpleX
             }
             
             ctrl.Tick();
+        }
+
+        private void OnToolbarGUI()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            {
+                if (GUILayout.Button("Sample", EditorStyles.toolbarButton))
+                {
+                    OnAnalysis();
+                }
+                GUILayout.FlexibleSpace();
+
+                GUI.color = Color.gray;
+                {
+                    EditorGUILayout.LabelField("UGUI Batch Analyzer v0.2.1");
+                }
+                GUI.color = Color.white;
+            }
+            EditorGUILayout.EndHorizontal();
         }
 
         private void OnAnalysis()
@@ -121,18 +135,11 @@ namespace SimpleX
                 {
                     scrollpos = EditorGUILayout.BeginScrollView(scrollpos);
                     {
-                        batchview.OnGUI(new Rect(rect));
+                        batchview.OnGUI(new Rect(0, 0, rect.width, rect.height));
                     }
                     EditorGUILayout.EndScrollView();
                 }
                 EditorGUILayout.EndVertical();
-
-                GUI.color = Color.green;
-                if (GUILayout.Button("Sample"))
-                {
-                    OnAnalysis();
-                }
-                GUI.color = Color.white;
             }
             EditorGUILayout.EndVertical();
         }

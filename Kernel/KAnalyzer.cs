@@ -23,8 +23,8 @@ namespace SimpleX
         private int injectMeshCount = 0;
         private List<WCanvas> wcanvas = new List<WCanvas>();
         private List<KBatch> batches = new List<KBatch>();
-
-        public bool ready { get; private set; } = false;
+        private bool ready = false;
+        
         public Action<List<KBatch>> OnChanged;
 
         public void Analysis()
@@ -130,11 +130,7 @@ namespace SimpleX
                 // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
                 mesh.OnMeshChanged = () => {
                     injectMeshCount++;
-                    
-                    if (totalMeshCount == injectMeshCount)
-                    {
-                        ready = true;
-                    }
+                    ready = (totalMeshCount == injectMeshCount);
                 };
             }
         }
@@ -242,8 +238,6 @@ namespace SimpleX
             {
                 return false;
             }
-
-            // TODO 其他判断条件，比如：UI不在一个平面上等
 
             return true;
         }

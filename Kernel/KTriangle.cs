@@ -27,7 +27,7 @@ namespace SimpleX
                 {
                     var b1 = other[j + 0];
                     var b2 = other[j + 1];
-                    if (IsIntersectant(a1, a2, b1, b2)) return true;
+                    if (IsIntersectant2(a1, a2, b1, b2)) return true;
                 }
             }
             // 点是否包含：
@@ -35,11 +35,11 @@ namespace SimpleX
             // 2、再判断三角形B的点是否在三角形A内
             for (int i=0; i<3; i++)
             {
-                if (this.IsContains2(other[i])) return true;
+                if (this.IsContain2(other[i])) return true;
             }
             for (int i=0; i<3; i++)
             {
-                if (other.IsContains2(this[i])) return true;
+                if (other.IsContain2(this[i])) return true;
             }
 
             return false;
@@ -48,6 +48,7 @@ namespace SimpleX
         public Vector3 this[int index] => vertices[index % 3];
 
         // 线段(a1,a2)和(b1, b2)是否相交
+        // TODO 有bug，暂未解决
         private bool IsIntersectant(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2)
         {
             var crossA = Mathf.Sign(Vector3.Cross(b2 - b1, a1 - b1).z);
@@ -84,7 +85,7 @@ namespace SimpleX
         }
 
         // 点(p)是否在三角形内
-        private bool IsContains(Vector3 p)
+        private bool IsContain(Vector3 p)
         {
             var ab = vertices[1] - vertices[0];
             var bc = vertices[2] - vertices[1];
@@ -108,8 +109,9 @@ namespace SimpleX
         
         private const float DEVIATION = 0.05f; // 误差
 
-        // 点(p)是否在三角形内（据说相比较IsContains函数，精度高一些）
-        private bool IsContains2(Vector3 p)
+        // 点(p)是否在三角形内
+        // 据说相比IsContains函数的精度高一些
+        private bool IsContain2(Vector3 p)
         {
             var d1 = vertices[1] - vertices[0];
             var d2 = vertices[2] - vertices[1];
