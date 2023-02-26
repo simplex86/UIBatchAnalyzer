@@ -10,19 +10,17 @@ namespace SimpleX
         public int renderOrder { get; } = 0;
         public KInstruction bottom { get; private set; } = null;
         public int depth { get; private set; } = 0;
-        public GameObject gameObject => graphic.gameObject;
-        public string name => graphic.gameObject.name;
-
+        public GameObject gameObject => (graphic == null) ? null : graphic.gameObject;
+        public string name => (graphic == null) ? string.Empty : graphic.name;
         public KMesh mesh { get; }= null;
         public Material material { get; } = null;
         public bool isMask { get; } = false;
         public bool isUnmask { get; } = false;
-        public Texture texture => graphic.mainTexture;
+        public Texture texture => (graphic == null) ? null : graphic.mainTexture;
         public SpriteAtlas spriteAtlas { get; }
         public int vertexCount => (mesh == null) ? 0 : mesh.vertexCount;
         
         private MaskableGraphic graphic = null;
-        
 
         public KInstruction(MaskableGraphic graphic, Material material, KMesh mesh, int renderOrder, bool isMask = false, bool isUnmask = false)
         {

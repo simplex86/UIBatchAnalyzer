@@ -12,22 +12,15 @@ namespace SimpleX
         // 子节点
         public List<KInstruction> instructions { get; } = new List<KInstruction>();
         // 材质
-        public Material material 
-        {
-            get { return (instructions.Count > 0) ? instructions[0].material : null; }
-        }
+        public Material material => (instructions.Count > 0) ? instructions[0].material : null;
         // 图集
-        public SpriteAtlas spriteAtlas 
-        {
-            get { return (instructions.Count > 0) ? instructions[0].spriteAtlas : null; }
-        }
+        public SpriteAtlas spriteAtlas => (instructions.Count > 0) ? instructions[0].spriteAtlas : null;
         // 纹理
-        public Texture texture 
-        {
-            get { return (instructions.Count > 0) ? instructions[0].texture : null; }
-        }
+        public Texture texture => (instructions.Count > 0) ? instructions[0].texture : null;
+        // 深度
+        public int depth => (instructions.Count > 0) ? instructions[0].depth : -1;
         // 子控件数量
-        public int instructionCount { get { return instructions.Count; }}
+        public int instructionCount => instructions.Count;
         // 顶点数量
         public int vertexCount { get; private set; } = 0;
 

@@ -14,6 +14,9 @@ namespace SimpleX
 
         private object selectedItem = null;
 
+        private const string _name_ = "UGUI Batch Analyzer";
+        private const string _version_ = "v0.2.3";
+
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
             this.data = data;
@@ -76,7 +79,7 @@ namespace SimpleX
 
                 GUI.color = Color.gray;
                 {
-                    EditorGUILayout.LabelField("UGUI Batch Analyzer v0.2.1");
+                    EditorGUILayout.LabelField($"{_name_} {_version_}");
                 }
                 GUI.color = Color.white;
             }
@@ -182,6 +185,7 @@ namespace SimpleX
             EditorGUILayout.ObjectField("Material", batch.material, typeof(GameObject));
             EditorGUILayout.ObjectField("Texture", batch.texture, typeof(Texture));
             EditorGUILayout.Space(4);
+            EditorGUILayout.TextField("Depth", batch.depth.ToString());
             EditorGUILayout.TextField("Instruction Count", batch.instructionCount.ToString());
             EditorGUILayout.TextField("Vertex Count", batch.vertexCount.ToString());
         }
