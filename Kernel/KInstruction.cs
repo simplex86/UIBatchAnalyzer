@@ -12,7 +12,7 @@ namespace SimpleX
         public int depth { get; private set; } = 0;
         public GameObject gameObject => (graphic == null) ? null : graphic.gameObject;
         public string name => (graphic == null) ? string.Empty : graphic.name;
-        public KMesh mesh { get; }= null;
+        public KMesh mesh { get; } = null;
         public Material material { get; } = null;
         public bool isMask { get; } = false;
         public bool isUnmask { get; } = false;

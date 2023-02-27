@@ -103,33 +103,40 @@ namespace SimpleX
             var graphics = GetRenderabledGraphics(canvas);
             foreach (var graphic in graphics)
             {
+                renderOrder++;
+                
                 var mesh = graphic.gameObject.GetComponent<UIMesh>();
                 if (mesh != null) // 如果不销毁，没有办法进行多次计算
                 {
                     GameObject.DestroyImmediate(mesh);
                 }
                 mesh = graphic.gameObject.AddComponent<UIMesh>();
-
-                renderOrder++;
-                var instructions = AllocInstructions(canvas);
-                
-                var mask = graphic.GetComponent<Mask>();
-                if (mask == null)
-                {
-                    instructions.Add(new KInstruction(graphic, graphic.materialForRendering, mesh.mesh, renderOrder, false, false));
-                }
-                else
-                {
-                    instructions.Add(new KInstruction(graphic, graphic.materialForRendering, mesh.mesh, renderOrder, true, false));
-                    
-                    var unmaskMaterial = GetUnmaskMaterial(mask);
-                    instructions.Add(new KInstruction(graphic, unmaskMaterial, mesh.mesh, renderOrder, false, true));
-                }
+                mesh.canvas = canvas;
+                mesh.renderOrder = renderOrder;
 
                 // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
                 // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
-                mesh.OnMeshChanged = () => {
+                mesh.OnMeshChanged = (transform, canvas, renderOrder, mesh) => {
                     injectMeshCount++;
+
+                    KMesh kmesh = new KMesh(transform);
+                    kmesh.Fill(mesh);
+                    
+                    var instructions = AllocInstructions(canvas);
+                
+                    var mask = graphic.GetComponent<Mask>();
+                    if (mask == null)
+                    {
+                        instructions.Add(new KInstruction(graphic, graphic.materialForRendering, kmesh, renderOrder, false, false));
+                    }
+                    else
+                    {
+                        instructions.Add(new KInstruction(graphic, graphic.materialForRendering, kmesh, renderOrder, true, false));
+                        
+                        var unmaskMaterial = GetUnmaskMaterial(mask);
+                        instructions.Add(new KInstruction(graphic, unmaskMaterial, kmesh, renderOrder, false, true));
+                    }
+                    
                     ready = (totalMeshCount == injectMeshCount);
                 };
             }
@@ -296,47 +303,17 @@ namespace SimpleX
         private void Sort(List<KInstruction> instructions)
         {
             instructions.Sort((a, b) => {
-                if (a.isUnmask && b.isUnmask)
+                // 按depth升序
+                if (a.depth < b.depth) return -1;
+                if (a.depth > b.depth) return  1;
+                // unmask排序 
+                if (a.isUnmask || b.isUnmask)
                 {
                     return SortUnmask(a, b);
                 }
 
                 return Sort(a, b);
             });
-        }
-
-        private int Sort(KInstruction a, KInstruction b)
-        {
-            // 按depth升序
-            if (a.depth < b.depth) return -1;
-            if (a.depth > b.depth) return  1;
-            // 按材质ID升序
-            var m1 = a.material;
-            var m2 = b.material;
-            if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
-            if (m1.GetInstanceID() > m2.GetInstanceID()) return  1;
-            
-            var t1 = a.texture;
-            var t2 = b.texture;
-            var s1 = a.sprite;
-            var s2 = b.sprite; 
-            // 只有一个有纹理的话，有纹理的优先
-            if (s1 == null && s2 != null) return -1;
-            if (s1 != null && s2 == null) return  1;
-            // 按纹理ID升序
-            if (t1 != null && t2 != null)
-            {
-                if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
-                if (t1.GetInstanceID() > t2.GetInstanceID()) return  1;
-            }
-            // 按图集ID升序
-            if (s1 != null && s2 != null)
-            {
-                if (s1.GetInstanceID() < s2.GetInstanceID()) return -1;
-                if (s1.GetInstanceID() > s2.GetInstanceID()) return  1;
-            }
-            // 按renderOrder升序
-            return (a.renderOrder < b.renderOrder) ? -1 : 1;
         }
 
         private int SortUnmask(KInstruction a, KInstruction b)
@@ -346,6 +323,36 @@ namespace SimpleX
             if ( a.isUnmask && !b.isUnmask) return  1;
             
             return Sort(b, a);
+        }
+        
+        private int Sort(KInstruction a, KInstruction b)
+        {
+            // 按材质ID升序
+            var m1 = a.material;
+            var m2 = b.material;
+            if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
+            if (m1.GetInstanceID() > m2.GetInstanceID()) return  1;
+            // 只有一个有纹理的话，有纹理的优先
+            var s1 = a.sprite;
+            var s2 = b.sprite;
+            if (s1 == null && s2 != null) return -1;
+            if (s1 != null && s2 == null) return  1;
+            // 按图集ID升序
+            if (s1 != null && s2 != null)
+            {
+                if (s1.GetInstanceID() < s2.GetInstanceID()) return -1;
+                if (s1.GetInstanceID() > s2.GetInstanceID()) return  1;
+            }
+            // 按纹理ID升序
+            var t1 = a.texture;
+            var t2 = b.texture;
+            if (t1 != null && t2 != null)
+            {
+                if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
+                if (t1.GetInstanceID() > t2.GetInstanceID()) return  1;
+            }
+            // 按renderOrder升序
+            return (a.renderOrder < b.renderOrder) ? -1 : 1;
         }
 
         private void Batch(Canvas canvas, List<KInstruction> instructions)
