@@ -315,13 +315,25 @@ namespace SimpleX
             var m2 = b.material;
             if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
             if (m1.GetInstanceID() > m2.GetInstanceID()) return  1;
-            // 按纹理ID升序
+            
             var t1 = a.texture;
             var t2 = b.texture;
+            var s1 = a.sprite;
+            var s2 = b.sprite; 
+            // 只有一个有纹理的话，有纹理的优先
+            if (s1 == null && s2 != null) return -1;
+            if (s1 != null && s2 == null) return  1;
+            // 按纹理ID升序
             if (t1 != null && t2 != null)
             {
                 if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
                 if (t1.GetInstanceID() > t2.GetInstanceID()) return  1;
+            }
+            // 按图集ID升序
+            if (s1 != null && s2 != null)
+            {
+                if (s1.GetInstanceID() < s2.GetInstanceID()) return -1;
+                if (s1.GetInstanceID() > s2.GetInstanceID()) return  1;
             }
             // 按renderOrder升序
             return (a.renderOrder < b.renderOrder) ? -1 : 1;

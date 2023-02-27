@@ -17,7 +17,7 @@ namespace SimpleX
         public bool isMask { get; } = false;
         public bool isUnmask { get; } = false;
         public Texture texture => (graphic == null) ? null : graphic.mainTexture;
-        public SpriteAtlas spriteAtlas { get; }
+        public Sprite sprite { get; } = null;
         public int vertexCount => (mesh == null) ? 0 : mesh.vertexCount;
         
         private MaskableGraphic graphic = null;
@@ -34,7 +34,7 @@ namespace SimpleX
             var image = graphic.gameObject.GetComponent<Image>();
             if (image != null && image.sprite != null)
             {
-                spriteAtlas = KSpriteAtlas.GetSpriteAtlas(image.sprite);
+                sprite = image.sprite;
             }
         }
 
@@ -60,13 +60,13 @@ namespace SimpleX
                 return false;
             }
             // 图集
-            if ((spriteAtlas != null && instruction.spriteAtlas == null) || (spriteAtlas == null && instruction.spriteAtlas != null))
+            if ((texture != null && instruction.texture == null) || (texture == null && instruction.texture != null))
             {
                 return false;
             }
-            if (spriteAtlas != null && instruction.spriteAtlas != null)
+            if (texture != null && instruction.texture != null)
             {
-                return (spriteAtlas.GetInstanceID() == instruction.spriteAtlas.GetInstanceID());
+                return (texture.GetInstanceID() == instruction.texture.GetInstanceID());
             }
             // 纹理
             return (texture.GetInstanceID() == instruction.texture.GetInstanceID());
