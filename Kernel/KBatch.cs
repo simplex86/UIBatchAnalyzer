@@ -17,6 +17,8 @@ namespace SimpleX
         public Texture texture => (instructions.Count > 0) ? instructions[0].texture : null;
         // 深度
         public int depth => (instructions.Count > 0) ? instructions[0].depth : -1;
+        public bool isMask => (instructions.Count > 0) ? instructions[0].isMask : false;
+        public bool isUnmask => (instructions.Count > 0) ? instructions[0].isUnmask : false;
         // 子控件数量
         public int instructionCount => instructions.Count;
         // 顶点数量

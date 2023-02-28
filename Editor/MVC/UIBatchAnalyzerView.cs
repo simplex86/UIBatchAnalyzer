@@ -174,7 +174,6 @@ namespace SimpleX
         private void OnCanvasGUI(kCanvas canvas)
         {
             EditorGUILayout.ObjectField("Canvas", canvas.canvas, typeof(Canvas));
-            EditorGUILayout.Space(4);
             EditorGUILayout.TextField("Batch Count", canvas.batchCount.ToString());
             EditorGUILayout.TextField("Instruction Count", canvas.instructionCount.ToString());
             EditorGUILayout.TextField("Vertex Count", canvas.vertexCount.ToString());
@@ -184,7 +183,20 @@ namespace SimpleX
         {
             EditorGUILayout.ObjectField("Material", batch.material, typeof(GameObject));
             EditorGUILayout.ObjectField("Texture", batch.texture, typeof(Texture));
-            EditorGUILayout.Space(4);
+            
+            var text = "";
+            if (batch.isMask)
+            {
+                text = "Mask\n";
+            }
+            else if (batch.isUnmask)
+            {
+                text = "Unmask\n";
+            }
+            var materialIID = batch.material.GetInstanceID();
+            var textureIID = batch.texture.GetInstanceID();
+            text += $"Material ID = {materialIID}, Texture ID = {textureIID}";
+            EditorGUILayout.HelpBox(text, MessageType.Info);
             EditorGUILayout.TextField("Depth", batch.depth.ToString());
             EditorGUILayout.TextField("Instruction Count", batch.instructionCount.ToString());
             EditorGUILayout.TextField("Vertex Count", batch.vertexCount.ToString());
@@ -193,11 +205,21 @@ namespace SimpleX
         private void OnInstructionGUI(KInstruction instruction)
         {
             EditorGUILayout.ObjectField("Game Object", instruction.gameObject, typeof(GameObject));
-            EditorGUILayout.Toggle("Mask", instruction.isMask);
-            EditorGUILayout.Toggle("Unmask", instruction.isUnmask);
             EditorGUILayout.ObjectField("Material", instruction.material, typeof(Material));
             EditorGUILayout.ObjectField("Texture", instruction.texture, typeof(Texture));
-            EditorGUILayout.Space(4);
+            var text = "";
+            if (instruction.isMask)
+            {
+                text = "Mask\n";
+            }
+            else if (instruction.isUnmask)
+            {
+                text = "Unmask\n";
+            }
+            var materialIID = instruction.material.GetInstanceID();
+            var textureIID = instruction.texture.GetInstanceID();
+            text += $"Material ID = {materialIID}, Texture ID = {textureIID}";
+            EditorGUILayout.HelpBox(text, MessageType.Info);
             EditorGUILayout.TextField("Depth", instruction.depth.ToString());
             EditorGUILayout.TextField("Render Order", instruction.renderOrder.ToString());
             EditorGUILayout.TextField("Vertex Count", instruction.vertexCount.ToString());

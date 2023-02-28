@@ -17,24 +17,29 @@ namespace SimpleX
         public bool isMask { get; } = false;
         public bool isUnmask { get; } = false;
         public Texture texture => (graphic == null) ? null : graphic.mainTexture;
-        public Sprite sprite { get; } = null;
         public int vertexCount => (mesh == null) ? 0 : mesh.vertexCount;
         
         private MaskableGraphic graphic = null;
 
-        public KInstruction(MaskableGraphic graphic, Material material, KMesh mesh, int renderOrder, bool isMask = false, bool isUnmask = false)
+        public KInstruction(MaskableGraphic graphic, KMesh mesh, int renderOrder, Mask mask = null, bool isUnmask = false)
         {
             this.graphic = graphic;
-            this.material = material;
+            this.material = graphic.materialForRendering;
             this.mesh = mesh;
             this.renderOrder = renderOrder;
-            this.isMask = isMask;
-            this.isUnmask = isUnmask;
-            
-            var image = graphic.gameObject.GetComponent<Image>();
-            if (image != null && image.sprite != null)
+            this.isMask = false;
+            this.isUnmask = false;
+
+            if (mask != null)
             {
-                sprite = image.sprite;
+                this.isMask = true;
+                this.isUnmask = isUnmask;
+                
+                if (isUnmask)
+                {
+                    this.isMask = false;
+                    material = GetUnmaskMaterial(mask);
+                }
             }
         }
 
@@ -54,22 +59,27 @@ namespace SimpleX
         // 检查是否可以和另一个UI节点合批
         public bool CheckBatch(KInstruction instruction)
         {
-            // 材质
+            // 不同材质不能合
             if (material.GetInstanceID() != instruction.material.GetInstanceID())
             {
                 return false;
             }
-            // 图集
-            if ((texture != null && instruction.texture == null) || (texture == null && instruction.texture != null))
+            // 不同纹理不能合
+            if (texture.GetInstanceID() != instruction.texture.GetInstanceID())
             {
                 return false;
             }
-            if (texture != null && instruction.texture != null)
-            {
-                return (texture.GetInstanceID() == instruction.texture.GetInstanceID());
-            }
-            // 纹理
-            return (texture.GetInstanceID() == instruction.texture.GetInstanceID());
+            // 不同平面不能合
+            // TODO
+
+            return true;
+        }
+        
+        // 获取UnMask阶段的Material
+        private Material GetUnmaskMaterial(Mask mask)
+        {
+            var unmaskMaterial = mask.GetType().GetField("m_UnmaskMaterial", BindingFlags.NonPublic | BindingFlags.Instance);
+            return unmaskMaterial.GetValue(mask) as Material;
         }
     }
 }

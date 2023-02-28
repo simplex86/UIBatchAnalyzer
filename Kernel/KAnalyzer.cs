@@ -33,19 +33,19 @@ namespace SimpleX
 
             var canvases = Transform.FindObjectsOfType<Canvas>(false);
             // 统计mesh数量
-            foreach (var canvas in canvases)
-            {
-                if (IsCanvasEnabled(canvas))
-                {
-                    totalMeshCount += GetMeshCount(canvas);
-                }
-            }
+            // foreach (var canvas in canvases)
+            // {
+            //     if (IsCanvasEnabled(canvas))
+            //     {
+            //         totalMeshCount += GetMeshCount(canvas);
+            //     }
+            // }
             // 注入mesh
             foreach (var canvas in canvases)
             {
                 if (IsCanvasEnabled(canvas))
                 {
-                    InjectMesh(canvas);
+                    GetRenderabledGraphics(canvas);
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace SimpleX
             
             batches.Clear();
             wcanvas.Clear();
-            KSpriteAtlas.Clear();
+            // KSpriteAtlas.Clear();
 
             var meshes = Transform.FindObjectsOfType<UIMesh>();
             foreach (var m in meshes)
@@ -87,59 +87,28 @@ namespace SimpleX
             }
         }
 
-        // 获取canvas下可渲染的mesh数量
-        private int GetMeshCount(Canvas canvas)
+        private void InjectMesh(MaskableGraphic graphic, KMesh kmesh)
         {
-            var graphics = GetRenderabledGraphics(canvas);
-            return graphics.Count;
-        }
-
-        // 暂时没有找到获取Mesh的方法，只能采用这种方案：
-        // 在Canvas下的Graphic子节点中注入UIMesh组件计算Mesh，因为是异步计算的，所以处理起来稍显麻烦。
-        private void InjectMesh(Canvas canvas)
-        {
-            var renderOrder = 0;
-
-            var graphics = GetRenderabledGraphics(canvas);
-            foreach (var graphic in graphics)
+            totalMeshCount++;
+            
+            var uiMesh = graphic.GetComponent<UIMesh>();
+            if (uiMesh != null) // 如果不销毁，没有办法进行多次计算
             {
-                renderOrder++;
-                
-                var mesh = graphic.gameObject.GetComponent<UIMesh>();
-                if (mesh != null) // 如果不销毁，没有办法进行多次计算
-                {
-                    GameObject.DestroyImmediate(mesh);
-                }
-                mesh = graphic.gameObject.AddComponent<UIMesh>();
-                mesh.canvas = canvas;
-                mesh.renderOrder = renderOrder;
-
-                // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
-                // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
-                mesh.OnMeshChanged = (transform, canvas, renderOrder, mesh) => {
-                    injectMeshCount++;
-
-                    KMesh kmesh = new KMesh(transform);
-                    kmesh.Fill(mesh);
-                    
-                    var instructions = AllocInstructions(canvas);
-                
-                    var mask = graphic.GetComponent<Mask>();
-                    if (mask == null)
-                    {
-                        instructions.Add(new KInstruction(graphic, graphic.materialForRendering, kmesh, renderOrder, false, false));
-                    }
-                    else
-                    {
-                        instructions.Add(new KInstruction(graphic, graphic.materialForRendering, kmesh, renderOrder, true, false));
-                        
-                        var unmaskMaterial = GetUnmaskMaterial(mask);
-                        instructions.Add(new KInstruction(graphic, unmaskMaterial, kmesh, renderOrder, false, true));
-                    }
-                    
-                    ready = (totalMeshCount == injectMeshCount);
-                };
+                GameObject.DestroyImmediate(uiMesh);
             }
+            uiMesh = graphic.gameObject.AddComponent<UIMesh>();
+            uiMesh.what = kmesh;
+                    
+            // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
+            // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
+            uiMesh.OnMeshChanged = (mesh, args) => {
+                injectMeshCount++;
+
+                var kmesh = args as KMesh;
+                kmesh.Fill(mesh);
+
+                ready = (totalMeshCount == injectMeshCount);
+            };
         }
 
         private List<KInstruction> AllocInstructions(Canvas canvas)
@@ -158,52 +127,50 @@ namespace SimpleX
             return c.instructions;
         }
 
-        // 获取UnMask阶段的Material
-        private Material GetUnmaskMaterial(Mask mask)
-        {
-            var mUnmaskMaterial = mask.GetType().GetField("m_UnmaskMaterial", BindingFlags.NonPublic | BindingFlags.Instance);
-            return mUnmaskMaterial.GetValue(mask) as Material;
-        }
-
         // 深度优先遍历所有可渲染的子节点
-        private List<MaskableGraphic> GetRenderabledGraphics(Canvas canvas)
+        private void GetRenderabledGraphics(Canvas canvas)
         {
-            var graphics = new List<MaskableGraphic>();
-
-            var transform = canvas.transform;
-            for (int i = 0; i < transform.childCount; i++)
-            {
-                var child = transform.GetChild(i).gameObject;
-                if (child.activeInHierarchy)
-                {
-                    GetRenderabledGraphics(child, graphics);
-                }
-            }
-
-            return graphics;
+            var renderOrder = 0;
+            GetRenderabledGraphics(canvas.gameObject, canvas, renderOrder);
         }
 
         // 获得渲染列表
-        private void GetRenderabledGraphics(GameObject root, List<MaskableGraphic> list)
+        private int GetRenderabledGraphics(GameObject gameObject, Canvas canvas, int renderOrder)
         {
-            if (root.GetComponent<Canvas>() == null)
+            if (gameObject.activeInHierarchy)
             {
-                var graph = root.GetComponent<MaskableGraphic>();
-                if (IsRenderabledGraphic(graph))
+                KMesh kmesh = null;
+                var instructions = AllocInstructions(canvas);
+                
+                var graphic = gameObject.GetComponent<MaskableGraphic>();
+                var mask = gameObject.GetComponent<Mask>();
+                
+                var renderabled = IsRenderabledGraphic(graphic);
+                if (renderabled)
                 {
-                    list.Add(graph);
+                    kmesh = new KMesh(gameObject.transform);
+                    instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, false));
+
+                    InjectMesh(graphic, kmesh);
+                    renderOrder++;
                 }
 
-                var transform = root.transform;
-                for (int i=0; i<transform.childCount; i++)
+                var transform = gameObject.transform;
+                for (int i = 0; i < transform.childCount; i++)
                 {
                     var child = transform.GetChild(i).gameObject;
-                    if (child.activeInHierarchy)
-                    {
-                        GetRenderabledGraphics(child, list);
-                    }
+                    renderOrder = GetRenderabledGraphics(child, canvas, renderOrder);
+                }
+                
+                if (renderabled && mask != null) 
+                {
+                    // 在最后添加一个unmask instruction，并和mask共享kmesh
+                    instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, true));
+                    renderOrder++;
                 }
             }
+
+            return renderOrder;
         }
 
         // 是否会被渲染
@@ -307,22 +274,13 @@ namespace SimpleX
                 if (a.depth < b.depth) return -1;
                 if (a.depth > b.depth) return  1;
                 // unmask排序 
-                if (a.isUnmask || b.isUnmask)
+                if (a.isUnmask && b.isUnmask)
                 {
-                    return SortUnmask(a, b);
+                    return Sort(b, a);
                 }
 
                 return Sort(a, b);
             });
-        }
-
-        private int SortUnmask(KInstruction a, KInstruction b)
-        {
-            // unmask
-            if (!a.isUnmask &&  b.isUnmask) return -1;
-            if ( a.isUnmask && !b.isUnmask) return  1;
-            
-            return Sort(b, a);
         }
         
         private int Sort(KInstruction a, KInstruction b)
@@ -332,17 +290,6 @@ namespace SimpleX
             var m2 = b.material;
             if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
             if (m1.GetInstanceID() > m2.GetInstanceID()) return  1;
-            // 只有一个有纹理的话，有纹理的优先
-            var s1 = a.sprite;
-            var s2 = b.sprite;
-            if (s1 == null && s2 != null) return -1;
-            if (s1 != null && s2 == null) return  1;
-            // 按图集ID升序
-            if (s1 != null && s2 != null)
-            {
-                if (s1.GetInstanceID() < s2.GetInstanceID()) return -1;
-                if (s1.GetInstanceID() > s2.GetInstanceID()) return  1;
-            }
             // 按纹理ID升序
             var t1 = a.texture;
             var t2 = b.texture;
