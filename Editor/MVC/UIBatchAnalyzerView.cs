@@ -13,6 +13,7 @@ namespace SimpleX
         private SimpleTreeView batchview = null;
 
         private object selectedItem = null;
+        private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
         private const string _version_ = "v0.2.3";
@@ -71,10 +72,14 @@ namespace SimpleX
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             {
-                if (GUILayout.Button("Sample", EditorStyles.toolbarButton))
+                if (GUILayout.Button("Sample", EditorStyles.toolbarButton, GUILayout.Width(80)))
                 {
                     OnAnalysis();
                 }
+                
+                EditorGUILayout.LabelField(new GUIContent("Gizmos Color"), GUILayout.Width(80));
+                gizmosColor = EditorGUILayout.ColorField(GUIContent.none, gizmosColor, false, true, false, GUILayout.Width(20));
+                
                 GUILayout.FlexibleSpace();
 
                 GUI.color = Color.gray;
@@ -231,7 +236,7 @@ namespace SimpleX
             {
                 var defaultColor = Handles.color;
 
-                Handles.color = Color.red;
+                Handles.color = gizmosColor;
                 {
                     if (selectedItem is kCanvas)
                     {
