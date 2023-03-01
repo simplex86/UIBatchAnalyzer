@@ -8,15 +8,15 @@ namespace SimpleX
     {
         private UIBatchAnalyzerData data;
         private UIBatchAnalyzerCtrl ctrl;
-        
-        private Vector2 scrollpos = Vector2.zero;
+
+        private SpliteView spliteview = null;
         private SimpleTreeView batchview = null;
 
         private object selectedItem = null;
         private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.2.3";
+        private const string _version_ = "v0.3.3";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -26,7 +26,7 @@ namespace SimpleX
 
         public void OnEnable()
         {
-            scrollpos = Vector2.zero;
+            spliteview = new SpliteView(SpliteView.Direction.Horizontal);
             
             batchview = new SimpleTreeView();
             batchview.onSelectionChanged = OnSelectionChangedHandler;
@@ -48,14 +48,17 @@ namespace SimpleX
         
             if (data.groups.Count == 0)
             {
-                EditorGUILayout.HelpBox("Click 'Sample' button to XXXX", MessageType.Info);
+                EditorGUILayout.HelpBox("UGUI Batch Analyzer show you the batches of UGUI. Click 'Sample' first!", MessageType.Info);
             }
             else
             {
                 EditorGUILayout.BeginHorizontal();
                 {
+                    spliteview.BeginSplitView();
                     OnBatchesViewGUI();
+                    spliteview.Split();
                     OnDetailsViewGUI();
+                    spliteview.EndSplitView();
                 }
                 EditorGUILayout.EndHorizontal();
 
@@ -137,24 +140,16 @@ namespace SimpleX
 
         private void OnBatchesViewGUI()
         {
-            EditorGUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            var rect = EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(true));
             {
-                var rect = EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(true));
-                {
-                    scrollpos = EditorGUILayout.BeginScrollView(scrollpos);
-                    {
-                        batchview.OnGUI(new Rect(0, 0, rect.width, rect.height));
-                    }
-                    EditorGUILayout.EndScrollView();
-                }
-                EditorGUILayout.EndVertical();
+                batchview.OnGUI(new Rect(0, 0, rect.width, rect.height));
             }
             EditorGUILayout.EndVertical();
         }
 
         private void OnDetailsViewGUI()
         {
-            EditorGUILayout.BeginVertical(EditorStyles.helpBox, GUILayout.ExpandHeight(true), GUILayout.Width(400));
+            EditorGUILayout.BeginVertical(GUILayout.ExpandHeight(true));
             {
                 if (selectedItem == null)
                 {
