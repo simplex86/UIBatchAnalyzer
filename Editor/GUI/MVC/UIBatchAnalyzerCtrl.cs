@@ -38,6 +38,12 @@ namespace SimpleX
         {
             analyzer?.Tick();
         }
+
+        public void Clear()
+        {
+            data.groups.Clear();
+            analyzer.Dispose();
+        }
         
         private void OnBatchChangedHandler(List<KBatch> batches)
         {

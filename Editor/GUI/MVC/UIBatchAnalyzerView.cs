@@ -16,7 +16,7 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.4.1";
+        private const string _version_ = "v0.4.5";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -87,9 +87,14 @@ namespace SimpleX
 
                 GUI.color = Color.gray;
                 {
-                    EditorGUILayout.LabelField($"{_name_} {_version_}");
+                    EditorGUILayout.LabelField($"{_name_} {_version_}", GUILayout.Width(170));
                 }
                 GUI.color = Color.white;
+                
+                if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50)))
+                {
+                    OnClear();
+                }
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -99,10 +104,17 @@ namespace SimpleX
             batchview.Clear();
             selectedItem = null;
             
-            ctrl.Analysis(() =>
-            {
+            ctrl.Analysis(() => {
                 RebuildBatchView();
             });
+        }
+
+        private void OnClear()
+        {
+            batchview.Clear();
+            selectedItem = null;
+            
+            ctrl.Clear();
         }
 
         private void RebuildBatchView()
