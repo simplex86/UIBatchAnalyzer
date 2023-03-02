@@ -91,24 +91,39 @@ namespace SimpleX
         {
             totalMeshCount++;
             
-            var uiMesh = graphic.GetComponent<UIMesh>();
-            if (uiMesh != null) // 如果不销毁，没有办法进行多次计算
+            var tmpro = graphic.GetComponent<TMPro.TextMeshProUGUI>();
+            if (tmpro != null)
             {
-                GameObject.DestroyImmediate(uiMesh);
-            }
-            uiMesh = graphic.gameObject.AddComponent<UIMesh>();
-            uiMesh.what = kmesh;
-                    
-            // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
-            // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
-            uiMesh.OnMeshChanged = (mesh, args) => {
                 injectMeshCount++;
-
-                var kmesh = args as KMesh;
-                kmesh.Fill(mesh);
+                kmesh.Fill(tmpro.mesh);
 
                 ready = (totalMeshCount == injectMeshCount);
-            };
+            }
+            else
+            {
+                
+
+                var uiMesh = graphic.GetComponent<UIMesh>();
+                if (uiMesh != null) // 如果不销毁，没有办法进行多次计算
+                {
+                    GameObject.DestroyImmediate(uiMesh);
+                }
+
+                uiMesh = graphic.gameObject.AddComponent<UIMesh>();
+                uiMesh.what = kmesh;
+
+                // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
+                // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
+                uiMesh.OnMeshChanged = (mesh, args) =>
+                {
+                    injectMeshCount++;
+
+                    var kmesh = args as KMesh;
+                    kmesh.Fill(mesh);
+
+                    ready = (totalMeshCount == injectMeshCount);
+                };
+            }
         }
 
         private List<KInstruction> AllocInstructions(Canvas canvas)

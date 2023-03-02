@@ -5,7 +5,7 @@
 
 ## Feature
 - [X] Text (Legacy)
-- [ ] TextMeshPro
+- [X] TextMeshPro
 - [X] Image
 - [X] RawImage
 - [X] Mask

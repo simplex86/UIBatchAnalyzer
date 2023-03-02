@@ -16,10 +16,12 @@ namespace SimpleX
         public Material material { get; } = null;
         public bool isMask { get; } = false;
         public bool isUnmask { get; } = false;
-        public Texture texture => (graphic == null) ? null : graphic.mainTexture;
+        public Texture texture => (graphic == null) ? null : _texture;
         public int vertexCount => (mesh == null) ? 0 : mesh.vertexCount;
         
         private MaskableGraphic graphic = null;
+        private Texture _texture => (graphic.mainTexture == null) ? materialTexture : graphic.mainTexture;
+        private Texture materialTexture => (material == null) ? null : material.mainTexture;
 
         public KInstruction(MaskableGraphic graphic, KMesh mesh, int renderOrder, Mask mask = null, bool isUnmask = false)
         {

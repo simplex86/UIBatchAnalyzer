@@ -16,7 +16,7 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.3.3";
+        private const string _version_ = "v0.4.1";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -48,7 +48,7 @@ namespace SimpleX
         
             if (data.groups.Count == 0)
             {
-                EditorGUILayout.HelpBox("UGUI Batch Analyzer show you the batches of UGUI. Click 'Sample' first!", MessageType.Info);
+                EditorGUILayout.HelpBox("UGUI Batch Analyzer show you the batches of UGUI. Click 'Sample' Now!", MessageType.Info);
             }
             else
             {
@@ -153,7 +153,7 @@ namespace SimpleX
             {
                 if (selectedItem == null)
                 {
-                    EditorGUILayout.HelpBox("Select a item please, and the information will be shown here", MessageType.Info);
+                    EditorGUILayout.HelpBox("Select a item, then the information will be shown here", MessageType.Info);
                 }
                 else if (selectedItem is kCanvas)
                 {

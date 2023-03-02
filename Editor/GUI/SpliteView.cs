@@ -79,14 +79,16 @@ namespace SimpleX
 
 			if (splitDirection == Direction.Horizontal)
 			{
-				resizeHandleRect = new Rect(availableRect.width * splitNormalizedPosition, availableRect.y, 2f, availableRect.height);
+				resizeHandleRect = new Rect(availableRect.width * splitNormalizedPosition, availableRect.y, 1f, availableRect.height);
 			}
 			else
 			{
-				resizeHandleRect = new Rect(availableRect.x, availableRect.height * splitNormalizedPosition, availableRect.width, 2f);
+				resizeHandleRect = new Rect(availableRect.x, availableRect.height * splitNormalizedPosition, availableRect.width, 1f);
 			}
 
+			GUI.color = Color.black;
 			GUI.DrawTexture(resizeHandleRect, EditorGUIUtility.whiteTexture);
+			GUI.color = Color.white;
 
 			if (splitDirection == Direction.Horizontal)
 			{
