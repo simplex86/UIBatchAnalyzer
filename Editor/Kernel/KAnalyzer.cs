@@ -110,15 +110,15 @@ namespace SimpleX
                 }
 
                 uiMesh = graphic.gameObject.AddComponent<UIMesh>();
-                uiMesh.what = kmesh;
+                uiMesh.userData = kmesh;
 
                 // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
                 // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
-                uiMesh.OnMeshChanged = (mesh, args) =>
+                uiMesh.OnMeshChanged = (mesh, userData) =>
                 {
                     injectMeshCount++;
 
-                    var kmesh = args as KMesh;
+                    var kmesh = userData as KMesh;
                     kmesh.Fill(mesh);
 
                     ready = (totalMeshCount == injectMeshCount);

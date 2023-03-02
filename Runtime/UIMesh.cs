@@ -8,15 +8,20 @@ namespace SimpleX
     public class UIMesh : BaseMeshEffect
     {
 #if UNITY_EDITOR
-        public object what { get; set; } = null;
+        public object userData { get; set; } = null;
         public Action<Mesh, object> OnMeshChanged;
+
+        private void Awake()
+        {
+            hideFlags = HideFlags.HideInInspector;
+        }
 
         public override void ModifyMesh(VertexHelper vh)
         {
             var mesh = new Mesh();
             vh.FillMesh(mesh);
 
-            OnMeshChanged?.Invoke(mesh, what);
+            OnMeshChanged?.Invoke(mesh, userData);
         }
 
         private void OnDestroy()
