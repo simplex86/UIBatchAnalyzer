@@ -36,42 +36,22 @@ namespace SimpleX
         }
 
         public KInstruction(MaskableGraphic graphic, KMesh mesh, int renderOrder, Mask mask, bool isUnmask = false)
+            : this(graphic, mesh, renderOrder)
         {
-            this.graphic = graphic;
-            this.material = graphic.materialForRendering;
-            this.mesh = mesh;
-            this.renderOrder = renderOrder;
-            this.isMask = false;
-            this.isUnmask = false;
-
-            if (mask != null)
+            this.isMask = true;
+            this.isUnmask = isUnmask;
+            
+            if (isUnmask)
             {
-                this.isMask = true;
-                this.isUnmask = isUnmask;
-                
-                if (isUnmask)
-                {
-                    this.isMask = false;
-                    material = GetUnmaskMaterial(mask);
-                }
+                this.isMask = false;
+                material = GetUnmaskMaterial(mask);
             }
         }
         
         public KInstruction(MaskableGraphic graphic, KMesh mesh, int renderOrder, RectMask2D rectmask2d)
+            : this(graphic, mesh, renderOrder)
         {
-            this.graphic = graphic;
-            this.material = graphic.materialForRendering;
-            this.mesh = mesh;
-            this.renderOrder = renderOrder;
             this.rectmask2d = rectmask2d;
-            this.isMask = false;
-            this.isUnmask = false;
-
-            if (rectmask2d != null)
-            {
-                this.isMask = true;
-                this.isUnmask = isUnmask;
-            }
         }
 
         // 判断mesh是否有覆盖

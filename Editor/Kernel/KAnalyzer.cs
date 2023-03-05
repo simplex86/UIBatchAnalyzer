@@ -151,7 +151,7 @@ namespace SimpleX
                 
                 var graphic = gameObject.GetComponent<MaskableGraphic>();
                 var mask = gameObject.GetComponent<Mask>();
-                var rectmask2d = GetLossyRectMask2D(gameObject.transform);
+                var rectmask2d = GetRectMask2D(gameObject.transform);
                 
                 var renderabled = IsRenderabledGraphic(graphic);
                 if (renderabled)
@@ -215,19 +215,19 @@ namespace SimpleX
             }
             // 透明
             var alpha = GetLossyAlpha(graphic);
-            if (alpha < float.Epsilon)
+            if (Mathf.Approximately(alpha, 0))
             {
                 return false;
             }
             // 面积小于等于0
             var rect = transform.rect;
-            if (rect.width * rect.height < float.Epsilon)
+            if (Mathf.Approximately(rect.width * rect.height, 0))
             {
                 return false;
             }
             // X或Y的缩放值为0
             var scale = transform.lossyScale;
-            if (Mathf.Abs(scale.x * scale.y) < float.Epsilon)
+            if (Mathf.Approximately(Mathf.Abs(scale.x * scale.y), 0))
             {
                 return false;
             }
@@ -354,7 +354,7 @@ namespace SimpleX
             return batch;
         }
 
-        private RectMask2D GetLossyRectMask2D(Transform transform)
+        private RectMask2D GetRectMask2D(Transform transform)
         {
             var rectmask2d = transform.GetComponent<RectMask2D>();
             while (rectmask2d == null)

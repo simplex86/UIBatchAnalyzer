@@ -16,7 +16,7 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.5.1";
+        private const string _version_ = "v0.5.2";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -31,7 +31,8 @@ namespace SimpleX
             batchview = new SimpleTreeView();
             batchview.onSelectionChanged = OnSelectionChangedHandler;
 
-            SceneView.duringSceneGui += OnSceneGUI;
+            SceneView.duringSceneGui += OnSceneGUIHandler;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChangedHandler;
         }
         
         public void OnDisable()
@@ -39,7 +40,8 @@ namespace SimpleX
             batchview.onSelectionChanged = null;
             batchview = null;
             
-            SceneView.duringSceneGui -= OnSceneGUI;
+            SceneView.duringSceneGui -= OnSceneGUIHandler;
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChangedHandler;
         }
 
         public void OnGUI()
@@ -217,11 +219,11 @@ namespace SimpleX
             var text = "";
             if (isMask)
             {
-                text = "Mask\n";
+                text = "Mask\n\n";
             }
             else if (isUnmask)
             {
-                text = "Unmask\n";
+                text = "Unmask\n\n";
             }
             
             var materialName = material.name;
@@ -230,10 +232,10 @@ namespace SimpleX
             var textureName = texture.name;
             var textureIID = texture.GetInstanceID();
             text += $"Texture\n    Name = {textureName}\n    ID = {textureIID}";
-            EditorGUILayout.HelpBox(text, MessageType.Info);
+            EditorGUILayout.HelpBox(text, MessageType.None);
         }
         
-        private void OnSceneGUI(SceneView sceneView)
+        private void OnSceneGUIHandler(SceneView sceneView)
         {
             if (selectedItem != null)
             {
@@ -293,6 +295,15 @@ namespace SimpleX
         private void OnSelectionChangedHandler(object seleced)
         {
             selectedItem = seleced;
+        }
+        
+        private void OnPlayModeStateChangedHandler(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.ExitingEditMode ||
+                state == PlayModeStateChange.ExitingPlayMode)
+            {
+                OnClear();
+            }
         }
     }
 }
