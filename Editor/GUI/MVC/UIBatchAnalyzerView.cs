@@ -16,7 +16,7 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.4.5";
+        private const string _version_ = "v0.5.1";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -195,20 +195,7 @@ namespace SimpleX
         {
             EditorGUILayout.ObjectField("Material", batch.material, typeof(GameObject));
             EditorGUILayout.ObjectField("Texture", batch.texture, typeof(Texture));
-            
-            var text = "";
-            if (batch.isMask)
-            {
-                text = "Mask\n";
-            }
-            else if (batch.isUnmask)
-            {
-                text = "Unmask\n";
-            }
-            var materialIID = batch.material.GetInstanceID();
-            var textureIID = batch.texture.GetInstanceID();
-            text += $"Material ID = {materialIID}, Texture ID = {textureIID}";
-            EditorGUILayout.HelpBox(text, MessageType.Info);
+            OnMaterialInfoGUI(batch.isMask, batch.isUnmask, batch.material, batch.texture);
             EditorGUILayout.TextField("Depth", batch.depth.ToString());
             EditorGUILayout.TextField("Instruction Count", batch.instructionCount.ToString());
             EditorGUILayout.TextField("Vertex Count", batch.vertexCount.ToString());
@@ -219,22 +206,31 @@ namespace SimpleX
             EditorGUILayout.ObjectField("Game Object", instruction.gameObject, typeof(GameObject));
             EditorGUILayout.ObjectField("Material", instruction.material, typeof(Material));
             EditorGUILayout.ObjectField("Texture", instruction.texture, typeof(Texture));
-            var text = "";
-            if (instruction.isMask)
-            {
-                text = "Mask\n";
-            }
-            else if (instruction.isUnmask)
-            {
-                text = "Unmask\n";
-            }
-            var materialIID = instruction.material.GetInstanceID();
-            var textureIID = instruction.texture.GetInstanceID();
-            text += $"Material ID = {materialIID}, Texture ID = {textureIID}";
-            EditorGUILayout.HelpBox(text, MessageType.Info);
+            OnMaterialInfoGUI(instruction.isMask, instruction.isUnmask, instruction.material, instruction.texture);
             EditorGUILayout.TextField("Depth", instruction.depth.ToString());
             EditorGUILayout.TextField("Render Order", instruction.renderOrder.ToString());
             EditorGUILayout.TextField("Vertex Count", instruction.vertexCount.ToString());
+        }
+
+        private void OnMaterialInfoGUI(bool isMask, bool isUnmask, Material material, Texture texture)
+        {
+            var text = "";
+            if (isMask)
+            {
+                text = "Mask\n";
+            }
+            else if (isUnmask)
+            {
+                text = "Unmask\n";
+            }
+            
+            var materialName = material.name;
+            var materialIID = material.GetInstanceID();
+            text += $"Material\n    Name = {materialName}\n    ID = {materialIID}\n";
+            var textureName = texture.name;
+            var textureIID = texture.GetInstanceID();
+            text += $"Texture\n    Name = {textureName}\n    ID = {textureIID}";
+            EditorGUILayout.HelpBox(text, MessageType.Info);
         }
         
         private void OnSceneGUI(SceneView sceneView)

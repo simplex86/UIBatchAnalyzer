@@ -40,9 +40,11 @@ SpriteAtlas:
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
+  - {fileID: 21300000, guid: 121a3cb7cae604b48b9d0150fb900e25, type: 3}
   - {fileID: 21300000, guid: d051c3c74daf9a5499558cf0b5150a33, type: 3}
   - {fileID: 21300000, guid: c72c31fe86ff5bc4ea1f43aa6f295f09, type: 3}
   m_PackedSpriteNamesToIndex:
+  - purple
   - green
   - blue
   m_RenderDataMap: {}

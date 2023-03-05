@@ -32,14 +32,6 @@ namespace SimpleX
             Dispose();
 
             var canvases = Transform.FindObjectsOfType<Canvas>(false);
-            // 统计mesh数量
-            // foreach (var canvas in canvases)
-            // {
-            //     if (IsCanvasEnabled(canvas))
-            //     {
-            //         totalMeshCount += GetMeshCount(canvas);
-            //     }
-            // }
             // 注入mesh
             foreach (var canvas in canvases)
             {
@@ -159,12 +151,24 @@ namespace SimpleX
                 
                 var graphic = gameObject.GetComponent<MaskableGraphic>();
                 var mask = gameObject.GetComponent<Mask>();
+                var rectmask2d = GetLossyRectMask2D(gameObject.transform);
                 
                 var renderabled = IsRenderabledGraphic(graphic);
                 if (renderabled)
                 {
                     kmesh = new KMesh(gameObject.transform);
-                    instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, false));
+                    if (mask != null)
+                    {
+                        instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, false));
+                    }
+                    else if (rectmask2d != null)
+                    {
+                        instructions.Add(new KInstruction(graphic, kmesh, renderOrder, rectmask2d));
+                    }
+                    else
+                    {
+                        instructions.Add(new KInstruction(graphic, kmesh, renderOrder));
+                    }
 
                     InjectMesh(graphic, kmesh);
                     renderOrder++;
@@ -348,6 +352,20 @@ namespace SimpleX
             batches.Add(batch);
 
             return batch;
+        }
+
+        private RectMask2D GetLossyRectMask2D(Transform transform)
+        {
+            var rectmask2d = transform.GetComponent<RectMask2D>();
+            while (rectmask2d == null)
+            {
+                transform = transform.parent;
+                if (transform == null) break;
+                
+                rectmask2d = transform.GetComponent<RectMask2D>();
+            }
+
+            return rectmask2d;
         }
     }
 }

@@ -6,7 +6,7 @@ SpriteAtlas:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Test1
+  m_Name: Atlas2
   m_EditorData:
     serializedVersion: 2
     textureSettings:
@@ -20,7 +20,19 @@ SpriteAtlas:
       readable: 0
       crunchedCompression: 0
       sRGB: 1
-    platformSettings: []
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: DefaultTexturePlatform
+      m_MaxTextureSize: 256
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: -1
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 0
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
     packingSettings:
       serializedVersion: 2
       padding: 4
@@ -32,20 +44,24 @@ SpriteAtlas:
     secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
-    - {fileID: 21300000, guid: 63d4d19dc979b38498ac8f6234790afe, type: 3}
+    - {fileID: 21300000, guid: ef77040967f13564a82da387b511ffe3, type: 3}
+    - {fileID: 21300000, guid: 121a3cb7cae604b48b9d0150fb900e25, type: 3}
     - {fileID: 21300000, guid: 915f98705d133974a94217401f0ee17f, type: 3}
+    - {fileID: 21300000, guid: 63d4d19dc979b38498ac8f6234790afe, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: 915f98705d133974a94217401f0ee17f, type: 3}
+  - {fileID: 21300000, guid: 121a3cb7cae604b48b9d0150fb900e25, type: 3}
   - {fileID: 21300000, guid: ef77040967f13564a82da387b511ffe3, type: 3}
   - {fileID: 21300000, guid: 63d4d19dc979b38498ac8f6234790afe, type: 3}
   m_PackedSpriteNamesToIndex:
   - red
+  - purple
   - pink
   - yellow
   m_RenderDataMap: {}
-  m_Tag: LoginUI
+  m_Tag: Atlas2
   m_IsVariant: 0
