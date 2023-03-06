@@ -8,8 +8,6 @@ namespace SimpleX
 {
     class UIBatchProfilerWindow : EditorWindow
     {
-        private UIBatchAnalyzerData data;
-        private UIBatchAnalyzerCtrl ctrl;
         private UIBatchAnalyzerView view;
 
         [MenuItem("SimpleX/UIBatch Profiler")]
@@ -21,10 +19,10 @@ namespace SimpleX
 
         private void OnEnable()
         {
-            data = new UIBatchAnalyzerData();
+            var data = new UIBatchAnalyzerData();
             data.OnEnable();
             
-            ctrl = new UIBatchAnalyzerCtrl(data);
+            var ctrl = new UIBatchAnalyzerCtrl(data);
             ctrl.OnEnable();
             
             view = new UIBatchAnalyzerView(data, ctrl);
@@ -37,16 +35,24 @@ namespace SimpleX
             this.Repaint();
         }
 
+        private void Update()
+        {
+            view?.OnUpdate();
+        }
+
         private void OnDisable()
         {
             view?.OnDisable();
-            ctrl?.OnDisable();
-            data?.OnDisable();
         }
 
         private void OnDestroy()
         {
-            
+            view = null;
+        }
+
+        private void OnHierarchyChange()
+        {
+            view?.OnHierarchyChange();
         }
     }
 }

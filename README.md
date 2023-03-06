@@ -26,7 +26,7 @@
 #### Windows
 - [X] Unity 2020.3.44f1
 - [X] Unity 2021.3.18f1
-- [ ] Unity 2022
+- [X] Unity 2022.2.8f1
 #### Mac
 - [ ] Unity 2020
 - [ ] Unity 2021

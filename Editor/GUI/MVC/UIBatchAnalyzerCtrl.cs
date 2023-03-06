@@ -7,10 +7,10 @@ namespace SimpleX
 {
     public class UIBatchAnalyzerCtrl
     {
-        private UIBatchAnalyzerData data;
+        public Action OnChanged = null;
         
+        private UIBatchAnalyzerData data;
         private KAnalyzer analyzer = null;
-        private Action callback = null;
 
         public UIBatchAnalyzerCtrl(UIBatchAnalyzerData data)
         {
@@ -20,33 +20,44 @@ namespace SimpleX
         public void OnEnable()
         {
             analyzer = new KAnalyzer();
-            analyzer.OnChanged = OnBatchChangedHandler;
+            analyzer.OnAnalyzed = OnBatchAnalyzedHandler;
+            
+            data.state = EAnalysisState.Idle;
         }
 
         public void OnDisable()
         {
-            analyzer.OnChanged = null;
+            analyzer.OnAnalyzed = null;
             analyzer.Dispose();
         }
         
-        public void Analysis(Action callback)
+        public void Analysis()
         {
-            this.callback = callback;
+            data.state = EAnalysisState.Analyzing;
             analyzer.Analysis();
         }
-
+        
         public void Tick()
         {
-            analyzer?.Tick();
+            if (data.state == EAnalysisState.Analyzing)
+            {
+                analyzer?.Tick();
+            }
+        }
+
+        public void Reset()
+        {
+            data.state = EAnalysisState.Idle;
         }
 
         public void Clear()
         {
+            Reset();
             data.groups.Clear();
             analyzer.Dispose();
         }
         
-        private void OnBatchChangedHandler(List<KBatch> batches)
+        private void OnBatchAnalyzedHandler(List<KBatch> batches)
         {
             data.groups.Clear();
             
@@ -55,8 +66,9 @@ namespace SimpleX
                 var group = AllocGroup(batch.canvas);
                 group.AddBatch(batch);
             }
-            
-            callback?.Invoke();
+
+            data.state = EAnalysisState.Analyzed;
+            OnChanged?.Invoke();
         }
         
         private kCanvas AllocGroup(Canvas canvas)

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.U2D;
 using UnityEditor;
 
 namespace SimpleX
@@ -16,12 +15,14 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.5.2";
+        private const string _version_ = "v0.6.1";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
             this.data = data;
             this.ctrl = ctrl;
+            
+            ctrl.OnChanged = OnChangedHandler;
         }
 
         public void OnEnable()
@@ -47,10 +48,17 @@ namespace SimpleX
         public void OnGUI()
         {
             OnToolbarGUI();
-        
+
             if (data.groups.Count == 0)
             {
-                EditorGUILayout.HelpBox("UGUI Batch Analyzer show you the batches of UGUI. Click 'Sample' Now!", MessageType.Info);
+                if (data.state == EAnalysisState.Idle)
+                {
+                    EditorGUILayout.HelpBox("UGUI Batch Analyzer show you the batches of UGUI. Click 'Sample' Now!", MessageType.Info);
+                }
+                else if (data.state == EAnalysisState.Analyzing)
+                {
+                    EditorGUILayout.HelpBox("Analyzing Now, please wait", MessageType.Info);
+                }
             }
             else
             {
@@ -69,18 +77,39 @@ namespace SimpleX
                     SceneView.RepaintAll();
                 }
             }
-            
-            ctrl.Tick();
+        }
+
+        public void OnUpdate()
+        {
+            ctrl?.Tick();
+        }
+        
+        public void OnHierarchyChange()
+        {
+            // OnHierarchyChange 消息可能会延迟几帧，
+            // 为了能在Hierarchy变化时自动重新计算合批，暂时采用这种方式
+            if (data.state == EAnalysisState.Analyzed)
+            {
+                ctrl.Reset();
+            }
+            else if (data.state == EAnalysisState.Idle)
+            {
+                OnAnalysis();
+            }
         }
 
         private void OnToolbarGUI()
         {
+            var enabled = (data.state != EAnalysisState.Analyzing);
+            
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             {
+                GUI.enabled = enabled;
                 if (GUILayout.Button("Sample", EditorStyles.toolbarButton, GUILayout.Width(80)))
                 {
                     OnAnalysis();
                 }
+                GUI.enabled = true;
                 
                 EditorGUILayout.LabelField(new GUIContent("Gizmos Color"), GUILayout.Width(80));
                 gizmosColor = EditorGUILayout.ColorField(GUIContent.none, gizmosColor, false, true, false, GUILayout.Width(20));
@@ -93,10 +122,12 @@ namespace SimpleX
                 }
                 GUI.color = Color.white;
                 
+                GUI.enabled = enabled;
                 if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50)))
                 {
                     OnClear();
                 }
+                GUI.enabled = true;
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -106,9 +137,7 @@ namespace SimpleX
             batchview.Clear();
             selectedItem = null;
             
-            ctrl.Analysis(() => {
-                RebuildBatchView();
-            });
+            ctrl.Analysis();
         }
 
         private void OnClear()
@@ -117,6 +146,11 @@ namespace SimpleX
             selectedItem = null;
             
             ctrl.Clear();
+        }
+
+        private void OnChangedHandler()
+        {
+            RebuildBatchView();
         }
 
         private void RebuildBatchView()

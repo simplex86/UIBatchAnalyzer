@@ -23,9 +23,9 @@ namespace SimpleX
         private int injectMeshCount = 0;
         private List<WCanvas> wcanvas = new List<WCanvas>();
         private List<KBatch> batches = new List<KBatch>();
-        private bool ready = false;
+        private bool completed = false;
         
-        public Action<List<KBatch>> OnChanged;
+        public Action<List<KBatch>> OnAnalyzed;
 
         public void Analysis()
         {
@@ -44,13 +44,15 @@ namespace SimpleX
 
         public void Tick()
         {
-            if (ready)
+            if (completed)
             {
+                UninjectMeshes();
+                
                 foreach (var v in wcanvas)
                 {
                     Analysis(v.canvas, v.instructions);
                 }
-                OnChanged?.Invoke(batches);
+                OnAnalyzed?.Invoke(batches);
                 
                 Dispose();
             }
@@ -64,19 +66,15 @@ namespace SimpleX
 
         public void Dispose()
         {
-            ready = false;
+            completed = false;
             totalMeshCount = 0;
             injectMeshCount = 0;
             
             batches.Clear();
             wcanvas.Clear();
             // KSpriteAtlas.Clear();
-
-            var meshes = Transform.FindObjectsOfType<UIMesh>();
-            foreach (var m in meshes)
-            {
-                GameObject.DestroyImmediate(m);
-            }
+            
+            UninjectMeshes();
         }
 
         private void InjectMesh(MaskableGraphic graphic, KMesh kmesh)
@@ -89,7 +87,7 @@ namespace SimpleX
                 injectMeshCount++;
                 kmesh.Fill(tmpro.mesh);
 
-                ready = (totalMeshCount == injectMeshCount);
+                completed = (totalMeshCount == injectMeshCount);
             }
             else
             {
@@ -106,15 +104,23 @@ namespace SimpleX
 
                 // mesh计算是在子线程中进行的，所以这里将注入mesh数量和总mesh数量进行对比
                 // 仅在最后一个mesh计算完成后才开始对所有canvas进行合批分析，避免线程的同步问题
-                uiMesh.OnMeshChanged = (mesh, userData) =>
-                {
+                uiMesh.OnMeshChanged = (mesh, userData) => {
                     injectMeshCount++;
 
                     var kmesh = userData as KMesh;
                     kmesh.Fill(mesh);
 
-                    ready = (totalMeshCount == injectMeshCount);
+                    completed = (totalMeshCount == injectMeshCount);
                 };
+            }
+        }
+
+        private void UninjectMeshes()
+        {
+            var meshes = Transform.FindObjectsOfType<UIMesh>();
+            foreach (var m in meshes)
+            {
+                GameObject.DestroyImmediate(m);
             }
         }
 
