@@ -18,8 +18,9 @@
 >注1：暂不支持Editor模式下的SpriteAtlas<br>
 ## 使用指南
 1. 菜单 SimpleX -> UIBatch Profiler，打开UGUI Batch窗口<br>![ugui_batch_03.png](https://github.com/simplex86/UIBatchAnalyzer/blob/main/_Doc/Images/ugui_batch_03.png)
-2. 点击“Sample”按钮<br>![ugui_batch_04.png](https://github.com/simplex86/UIBatchAnalyzer/blob/main/_Doc/Images/ugui_batch_04.png)
-3. 左边列出每个Canvas下的所有Batch以及每个Batch的组成。选择各个节点后，可以在右边查看详细信息<br>![ugui_batch_05.png](https://github.com/simplex86/UIBatchAnalyzer/blob/main/_Doc/Images/ugui_batch_05.png)
+2. 点击“Enable”按钮，启动Batch分析功能<br>![ugui_batch_04.png](https://github.com/simplex86/UIBatchAnalyzer/blob/main/_Doc/Images/ugui_batch_04.png)
+3. 左边列出每个Canvas下的Batch及其UI控件的组成。选择各个节点后，可以在右边查看详细信息<br>![ugui_batch_05.png](https://github.com/simplex86/UIBatchAnalyzer/blob/main/_Doc/Images/ugui_batch_05.png)
+4. 点击“Disable”按钮，关闭Batch分析功能
 >注：在Inspector中修改某些属性时，不会自动刷新Batch数据，请重新Enable后查看
 ## 测试环境
 #### Windows
