@@ -15,7 +15,7 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
 
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.6.1";
+        private const string _version_ = "v0.7.2";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -34,6 +34,8 @@ namespace SimpleX
 
             SceneView.duringSceneGui += OnSceneGUIHandler;
             EditorApplication.playModeStateChanged += OnPlayModeStateChangedHandler;
+
+            selectedItem = null;
         }
         
         public void OnDisable()
@@ -43,6 +45,8 @@ namespace SimpleX
             
             SceneView.duringSceneGui -= OnSceneGUIHandler;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChangedHandler;
+
+            selectedItem = null;
         }
 
         public void OnGUI()
@@ -53,7 +57,7 @@ namespace SimpleX
             {
                 if (data.state == EAnalysisState.Idle)
                 {
-                    EditorGUILayout.HelpBox("UGUI Batch Analyzer show you the batches of UGUI. Click 'Sample' Now!", MessageType.Info);
+                    EditorGUILayout.HelpBox("UGUI Batch Analyzer show you the batches of UGUI. Click 'Enable' Now!", MessageType.Info);
                 }
                 else if (data.state == EAnalysisState.Analyzing)
                 {
@@ -86,6 +90,8 @@ namespace SimpleX
         
         public void OnHierarchyChange()
         {
+            if (!data.enabled) return;
+            selectedItem = null;
             // OnHierarchyChange 消息可能会延迟几帧，
             // 为了能在Hierarchy变化时自动重新计算合批，暂时采用这种方式
             if (data.state == EAnalysisState.Analyzed)
@@ -100,14 +106,26 @@ namespace SimpleX
 
         private void OnToolbarGUI()
         {
-            var enabled = (data.state != EAnalysisState.Analyzing);
+            var analyzing = (data.state == EAnalysisState.Analyzing);
             
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
             {
-                GUI.enabled = enabled;
-                if (GUILayout.Button("Sample", EditorStyles.toolbarButton, GUILayout.Width(80)))
+                GUI.enabled = !analyzing;
+                if (data.enabled)
                 {
-                    OnAnalysis();
+                    if (GUILayout.Button("Disable", EditorStyles.toolbarButton, GUILayout.Width(80)))
+                    {
+                        data.enabled = false;
+                        OnClear();
+                    }
+                }
+                else
+                {
+                    if (GUILayout.Button("Enable", EditorStyles.toolbarButton, GUILayout.Width(80)))
+                    {
+                        data.enabled = true;
+                        OnAnalysis();
+                    }
                 }
                 GUI.enabled = true;
                 
@@ -122,7 +140,7 @@ namespace SimpleX
                 }
                 GUI.color = Color.white;
                 
-                GUI.enabled = enabled;
+                GUI.enabled = !analyzing;
                 if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50)))
                 {
                     OnClear();
@@ -336,6 +354,7 @@ namespace SimpleX
             if (state == PlayModeStateChange.ExitingEditMode ||
                 state == PlayModeStateChange.ExitingPlayMode)
             {
+                data.enabled = false;
                 OnClear();
             }
         }

@@ -12,6 +12,7 @@ namespace SimpleX
     
     public class UIBatchAnalyzerData
     {
+        public bool enabled { get; set; } = false;
         public EAnalysisState state { get; set; } = EAnalysisState.Idle;
         public List<kCanvas> groups { get; private set; }
 

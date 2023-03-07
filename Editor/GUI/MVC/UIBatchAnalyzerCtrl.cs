@@ -21,25 +21,32 @@ namespace SimpleX
         {
             analyzer = new KAnalyzer();
             analyzer.OnAnalyzed = OnBatchAnalyzedHandler;
-            
+
+            data.enabled = false;
             data.state = EAnalysisState.Idle;
         }
 
         public void OnDisable()
         {
+            data.enabled = false;
             analyzer.OnAnalyzed = null;
             analyzer.Dispose();
         }
         
         public void Analysis()
         {
-            data.state = EAnalysisState.Analyzing;
-            analyzer.Analysis();
+            if (data.enabled)
+            {
+                data.groups.Clear();
+                data.state = EAnalysisState.Analyzing;
+                analyzer.Analysis();
+            }
         }
         
         public void Tick()
         {
-            if (data.state == EAnalysisState.Analyzing)
+            if (data.enabled && 
+                data.state == EAnalysisState.Analyzing)
             {
                 analyzer?.Tick();
             }
@@ -59,16 +66,19 @@ namespace SimpleX
         
         private void OnBatchAnalyzedHandler(List<KBatch> batches)
         {
-            data.groups.Clear();
-            
-            foreach (var batch in batches)
+            if (data.enabled)
             {
-                var group = AllocGroup(batch.canvas);
-                group.AddBatch(batch);
-            }
+                data.groups.Clear();
 
-            data.state = EAnalysisState.Analyzed;
-            OnChanged?.Invoke();
+                foreach (var batch in batches)
+                {
+                    var group = AllocGroup(batch.canvas);
+                    group.AddBatch(batch);
+                }
+
+                data.state = EAnalysisState.Analyzed;
+                OnChanged?.Invoke();
+            }
         }
         
         private kCanvas AllocGroup(Canvas canvas)
