@@ -14,7 +14,7 @@
 - [X] RawImage
 - [X] Mask
 - [X] RectMask2D
-- [X] Sub Canvas
+- [X] Nested Canvas
 >关于Image的合批，需要就SpriteAtlas做几点说明<br>
 > 1）Unity仅在在Play模式下为SpriteAtlas生成对应的Texture，所以本工具在Editor模式下以SpriteAtlas替代运行时（真机或Play模式）动态生成的对应的Texture。可能导致Batch的前后顺序有差异，但不影响合批的本质<br>
 > 2）如果SpriteAtlas的尺寸设置的太小，会在运行时生成多个Texture，导致即使多个Image引用同一个SpriteAtlas中的不同Sprites也无法合批。目前无法知晓某个Sprite具体在哪一个Texture中，所以在Editor模式下得到的合批结果可能和运行时不一致<br>
