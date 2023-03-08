@@ -24,6 +24,8 @@ namespace SimpleX
 
             data.enabled = false;
             data.state = EAnalysisState.Idle;
+            
+            KSpriteAtlas.Load();
         }
 
         public void OnDisable()
@@ -31,6 +33,8 @@ namespace SimpleX
             data.enabled = false;
             analyzer.OnAnalyzed = null;
             analyzer.Dispose();
+            
+            KSpriteAtlas.Clear();
         }
         
         public void Analysis()

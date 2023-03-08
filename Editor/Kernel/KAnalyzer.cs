@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -72,7 +73,6 @@ namespace SimpleX
             
             batches.Clear();
             wcanvas.Clear();
-            // KSpriteAtlas.Clear();
             
             UninjectMeshes();
         }
@@ -184,7 +184,10 @@ namespace SimpleX
                 for (int i = 0; i < transform.childCount; i++)
                 {
                     var child = transform.GetChild(i).gameObject;
-                    renderOrder = GetRenderabledGraphics(child, canvas, renderOrder);
+                    if (child.GetComponent<Canvas>() == null) // 忽略嵌套Canvas
+                    {
+                        renderOrder = GetRenderabledGraphics(child, canvas, renderOrder);
+                    }
                 }
                 
                 if (renderabled && mask != null) 
@@ -307,8 +310,48 @@ namespace SimpleX
                 return Sort(a, b);
             });
         }
-        
+
         private int Sort(KInstruction a, KInstruction b)
+        {
+            if (EditorApplication.isPlaying)
+            {
+                return SortInPlayMode(a, b);
+            }
+
+            return SortInEditorMode(a, b);
+        }
+        
+        private int SortInEditorMode(KInstruction a, KInstruction b)
+        {
+            // 按材质ID升序
+            var m1 = a.material;
+            var m2 = b.material;
+            if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
+            if (m1.GetInstanceID() > m2.GetInstanceID()) return  1;
+            if (a.spriteAtlas == null || b.spriteAtlas == null)
+            {
+                // 按纹理ID升序
+                var t1 = a.texture;
+                var t2 = b.texture;
+                if (t1 != null && t2 != null)
+                {
+                    if (t1.GetInstanceID() < t2.GetInstanceID()) return -1;
+                    if (t1.GetInstanceID() > t2.GetInstanceID()) return 1;
+                }
+            }
+            else
+            {
+                // 按图集ID升序
+                var s1 = a.spriteAtlas;
+                var s2 = b.spriteAtlas;
+                if (s1.GetInstanceID() < s2.GetInstanceID()) return -1;
+                if (s1.GetInstanceID() > s2.GetInstanceID()) return 1;
+            }
+            // 按renderOrder升序
+            return (a.renderOrder < b.renderOrder) ? -1 : 1;
+        }
+        
+        private int SortInPlayMode(KInstruction a, KInstruction b)
         {
             // 按材质ID升序
             var m1 = a.material;

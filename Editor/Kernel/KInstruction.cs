@@ -1,5 +1,5 @@
 using System.Reflection;
-using TMPro;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UI;
@@ -16,6 +16,7 @@ namespace SimpleX
         public KMesh mesh { get; } = null;
         public Material material { get; } = null;
         public Texture texture => (materialTexture == null) ? graphicTexture : materialTexture;
+        public SpriteAtlas spriteAtlas { get; } = null;
         public bool isMask { get; } = false;
         public bool isUnmask { get; } = false;
         public RectMask2D rectmask2d { get; } = null;
@@ -33,6 +34,13 @@ namespace SimpleX
             this.renderOrder = renderOrder;
             this.isMask = false;
             this.isUnmask = false;
+
+            var image = graphic as Image;
+            if (image != null)
+            {
+                var sprite = image.sprite;
+                spriteAtlas = KSpriteAtlas.GetSpriteAtlas(sprite);
+            }
         }
 
         public KInstruction(MaskableGraphic graphic, KMesh mesh, int renderOrder, Mask mask, bool isUnmask = false)
@@ -70,8 +78,56 @@ namespace SimpleX
         // 检查是否可以和另一个UI节点合批
         public bool CheckBatch(KInstruction instruction)
         {
-            // rectmask2d不同不能合
-            if (!CompareRectMask2D(rectmask2d, instruction.rectmask2d))
+            if (EditorApplication.isPlaying)
+            {
+                return CheckBatchInPlayMode(instruction);
+            }
+
+            return CheckBatchInEditorMode(instruction);
+        }
+
+        private bool CheckBatchInEditorMode(KInstruction instruction)
+        {
+            // 不同rectmask2d不能合
+            if (!IsBatchableRectMask2D(rectmask2d, instruction.rectmask2d))
+            {
+                return false;
+            }
+            // 不同材质不能合
+            if (material.GetInstanceID() != instruction.material.GetInstanceID())
+            {
+                return false;
+            }
+            // Editor模式下如果SpriteAtlas都存在，则比较SpriteAtlas
+            if (spriteAtlas != null && instruction.spriteAtlas != null)
+            {
+                // 不同SpriteAtlas不能合
+                if (spriteAtlas.GetInstanceID() != instruction.spriteAtlas.GetInstanceID())
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // 不同纹理不能合
+                if (texture.GetInstanceID() != instruction.texture.GetInstanceID())
+                {
+                    return false;
+                }
+            }
+            // 不同平面不能合
+            if (!IsSamePlane(instruction))
+            {
+                return false;
+            }
+            
+            return true;
+        }
+
+        private bool CheckBatchInPlayMode(KInstruction instruction)
+        {
+            // 不同rectmask2d不能合
+            if (!IsBatchableRectMask2D(rectmask2d, instruction.rectmask2d))
             {
                 return false;
             }
@@ -86,11 +142,14 @@ namespace SimpleX
                 return false;
             }
             // 不同平面不能合
-            // TODO
+            if (!IsSamePlane(instruction))
+            {
+                return false;
+            }
 
             return true;
         }
-        
+
         // 获取UnMask阶段的Material
         private Material GetUnmaskMaterial(Mask mask)
         {
@@ -98,7 +157,7 @@ namespace SimpleX
             return unmaskMaterial.GetValue(mask) as Material;
         }
 
-        private bool CompareRectMask2D(RectMask2D a, RectMask2D b)
+        private bool IsBatchableRectMask2D(RectMask2D a, RectMask2D b)
         {
             if ((a != null && b == null) || (a == null && b != null))
             {
@@ -146,6 +205,12 @@ namespace SimpleX
                 }
             }
             
+            return true;
+        }
+
+        private bool IsSamePlane(KInstruction instruction)
+        {
+            // TODO 是否在同一个平面上
             return true;
         }
     }

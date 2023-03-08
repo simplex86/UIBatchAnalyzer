@@ -13,6 +13,8 @@ namespace SimpleX
         public List<KInstruction> instructions { get; } = new List<KInstruction>();
         // 材质
         public Material material => (instructions.Count > 0) ? instructions[0].material : null;
+        // 图集
+        public SpriteAtlas spriteAtlas => (instructions.Count > 0) ? instructions[0].spriteAtlas : null;
         // 纹理
         public Texture texture => (instructions.Count > 0) ? instructions[0].texture : null;
         // 深度
