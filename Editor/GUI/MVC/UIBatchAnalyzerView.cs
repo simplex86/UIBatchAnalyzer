@@ -14,6 +14,7 @@ namespace SimpleX
 
         private object selectedItem = null;
         private Color gizmosColor = Color.red;
+        private bool isDirty = false;
 
         private const string _name_ = "UGUI Batch Analyzer";
         private const string _version_ = "v0.8.1";
@@ -22,12 +23,11 @@ namespace SimpleX
         {
             this.data = data;
             this.ctrl = ctrl;
-            
-            ctrl.OnChanged = OnChangedHandler;
         }
 
         public void OnEnable()
         {
+            selectedItem = null;
             spliteview = new SpliteView(SpliteView.Direction.Horizontal);
             
             batchview = new SimpleTreeView();
@@ -35,19 +35,25 @@ namespace SimpleX
 
             SceneView.duringSceneGui += OnSceneGUIHandler;
             EditorApplication.playModeStateChanged += OnPlayModeStateChangedHandler;
+            EditorApplication.update += OnUpdate;
+            EditorApplication.hierarchyChanged += OnHierarchyChange;
 
-            selectedItem = null;
+            ctrl.OnAnalyzed = OnAnalyzedHandler;
         }
         
         public void OnDisable()
         {
+            selectedItem = null;
+            
             batchview.onSelectionChanged = null;
             batchview = null;
             
             SceneView.duringSceneGui -= OnSceneGUIHandler;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChangedHandler;
-
-            selectedItem = null;
+            EditorApplication.update -= OnUpdate;
+            EditorApplication.hierarchyChanged -= OnHierarchyChange;
+            
+            ctrl.OnAnalyzed = null;
         }
 
         public void OnGUI()
@@ -86,22 +92,36 @@ namespace SimpleX
 
         public void OnUpdate()
         {
-            ctrl?.Tick();
+            if (data.enabled)
+            {
+                if (data.state == EAnalysisState.Analyzing)
+                {
+                    ctrl?.Tick();
+                }
+                
+                if (data.dirty && 
+                    data.state == EAnalysisState.Idle)
+                {
+                    OnAnalysis();
+                }
+            }
         }
         
         public void OnHierarchyChange()
         {
-            if (!data.enabled) return;
-            selectedItem = null;
-            // OnHierarchyChange 消息可能会延迟几帧，
-            // 为了能在Hierarchy变化时自动重新计算合批，暂时采用这种方式
-            if (data.state == EAnalysisState.Analyzed)
+            if (data.enabled)
             {
-                ctrl.Reset();
-            }
-            else if (data.state == EAnalysisState.Idle)
-            {
-                OnAnalysis();
+                selectedItem = null;
+                // OnHierarchyChange 消息可能会延迟几帧，
+                // 为了能在Hierarchy变化时自动重新计算合批，暂时采用这种方式
+                if (data.state == EAnalysisState.Analyzed)
+                {
+                    ctrl.Reset();
+                }
+                else if (data.state == EAnalysisState.Idle)
+                {
+                    OnAnalysis();
+                }
             }
         }
 
@@ -167,7 +187,7 @@ namespace SimpleX
             ctrl.Clear();
         }
 
-        private void OnChangedHandler()
+        private void OnAnalyzedHandler()
         {
             RebuildBatchView();
         }

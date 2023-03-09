@@ -26,8 +26,10 @@ namespace SimpleX
         private List<KBatch> batches = new List<KBatch>();
         private bool completed = false;
         
-        public Action<List<KBatch>> OnAnalyzed;
+        public Action OnDirty;
 
+        public Action<List<KBatch>> OnAnalyzed;
+        
         public void Analysis()
         {
             Dispose();
@@ -162,6 +164,9 @@ namespace SimpleX
                 var renderabled = IsRenderabledGraphic(graphic);
                 if (renderabled)
                 {
+                    graphic.UnregisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
+                    graphic.RegisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
+                    
                     kmesh = new KMesh(gameObject.transform);
                     if (mask != null)
                     {
@@ -415,6 +420,12 @@ namespace SimpleX
             }
 
             return rectmask2d;
+        }
+
+        private void OnGraphicMaterialDirtyHandler()
+        {
+            Debug.Log("OnGraphicMaterialDirtyHandler");
+            OnDirty?.Invoke();
         }
     }
 }

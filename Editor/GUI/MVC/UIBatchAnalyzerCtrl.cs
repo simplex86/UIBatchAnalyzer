@@ -7,7 +7,7 @@ namespace SimpleX
 {
     public class UIBatchAnalyzerCtrl
     {
-        public Action OnChanged = null;
+        public Action OnAnalyzed = null;
         
         private UIBatchAnalyzerData data;
         private KAnalyzer analyzer = null;
@@ -20,6 +20,7 @@ namespace SimpleX
         public void OnEnable()
         {
             analyzer = new KAnalyzer();
+            analyzer.OnDirty = OnMaterialDiryHandler;
             analyzer.OnAnalyzed = OnBatchAnalyzedHandler;
 
             data.enabled = false;
@@ -31,6 +32,7 @@ namespace SimpleX
         public void OnDisable()
         {
             data.enabled = false;
+            analyzer.OnDirty = null;
             analyzer.OnAnalyzed = null;
             analyzer.Dispose();
             
@@ -49,11 +51,7 @@ namespace SimpleX
         
         public void Tick()
         {
-            if (data.enabled && 
-                data.state == EAnalysisState.Analyzing)
-            {
-                analyzer?.Tick();
-            }
+            analyzer?.Tick();
         }
 
         public void Reset()
@@ -70,6 +68,8 @@ namespace SimpleX
         
         private void OnBatchAnalyzedHandler(List<KBatch> batches)
         {
+            data.dirty = false;
+            
             if (data.enabled)
             {
                 data.groups.Clear();
@@ -81,7 +81,7 @@ namespace SimpleX
                 }
 
                 data.state = EAnalysisState.Analyzed;
-                OnChanged?.Invoke();
+                OnAnalyzed?.Invoke();
             }
         }
         
@@ -98,6 +98,11 @@ namespace SimpleX
             groups.Add(group);
 
             return group;
+        }
+
+        private void OnMaterialDiryHandler()
+        {
+            data.dirty = true;
         }
     }
 }
