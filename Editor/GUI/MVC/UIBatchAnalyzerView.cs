@@ -18,7 +18,7 @@ namespace SimpleX
 
         private static GUIStyle _style_ = null;
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.9.2";
+        private const string _version_ = "v1.0.0";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -340,8 +340,8 @@ namespace SimpleX
             {
                 EditorGUILayout.ObjectField("Material", material, typeof(Material));
 
-                var materialIID = material.GetInstanceID();
-                EditorGUILayout.HelpBox($"ID: {materialIID}", MessageType.Info);
+                // var iid = material.GetInstanceID();
+                // EditorGUILayout.HelpBox($"ID: {iid}", MessageType.Info);
             }
         }
         
@@ -351,8 +351,8 @@ namespace SimpleX
             {
                 EditorGUILayout.ObjectField("Sprite Atlas", spriteAtlas, typeof(SpriteAtlas));
 
-                var textureIID = spriteAtlas.GetInstanceID();
-                EditorGUILayout.HelpBox($"ID: {textureIID}", MessageType.Info);
+                // var iid = spriteAtlas.GetInstanceID();
+                // EditorGUILayout.HelpBox($"ID: {iid}", MessageType.Info);
             }
         }
         
@@ -362,8 +362,8 @@ namespace SimpleX
             {
                 EditorGUILayout.ObjectField("Texture", texture, typeof(Texture));
 
-                var textureIID = texture.GetInstanceID();
-                EditorGUILayout.HelpBox($"ID: {textureIID}", MessageType.Info);
+                // var iid = texture.GetInstanceID();
+                // EditorGUILayout.HelpBox($"ID: {iid}", MessageType.Info);
             }
         }
         

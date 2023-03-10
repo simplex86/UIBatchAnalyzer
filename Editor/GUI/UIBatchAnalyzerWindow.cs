@@ -35,11 +35,6 @@ namespace SimpleX
             this.Repaint();
         }
 
-        // private void Update()
-        // {
-        //     view?.OnUpdate();
-        // }
-
         private void OnDisable()
         {
             view?.OnDisable();
@@ -49,10 +44,5 @@ namespace SimpleX
         {
             view = null;
         }
-
-        // private void OnHierarchyChange()
-        // {
-        //     view?.OnHierarchyChange();
-        // }
     }
 }
