@@ -15,6 +15,8 @@ namespace SimpleX
             vertices[2] = c;
         }
 
+        // 是否重叠
+        // TODO 算法很朴素，效率比较低
         public bool Overlap(KTriangle other)
         {
             // 边是否相交
@@ -43,6 +45,13 @@ namespace SimpleX
             }
 
             return false;
+        }
+
+        // 是否在同一平面内
+        public bool IsSamePlane(KTriangle other)
+        {
+            // TODO
+            return true;
         }
 
         public Vector3 this[int index] => vertices[index % 3];

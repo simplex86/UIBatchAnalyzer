@@ -20,7 +20,7 @@ namespace SimpleX
         public void OnEnable()
         {
             analyzer = new KAnalyzer();
-            analyzer.OnDirty = OnMaterialDiryHandler;
+            analyzer.OnDirty = OnDirtyHandler;
             analyzer.OnAnalyzed = OnBatchAnalyzedHandler;
 
             data.enabled = false;
@@ -31,10 +31,11 @@ namespace SimpleX
 
         public void OnDisable()
         {
-            data.enabled = false;
-            analyzer.OnDirty = null;
-            analyzer.OnAnalyzed = null;
             analyzer.Dispose();
+            
+            data.enabled = false;
+            data.state = EAnalysisState.Idle;
+            data.groups.Clear();
             
             KSpriteAtlas.Clear();
         }
@@ -54,16 +55,16 @@ namespace SimpleX
             analyzer?.Tick();
         }
 
-        public void Reset()
+        public void ToIdle()
         {
             data.state = EAnalysisState.Idle;
         }
 
         public void Clear()
         {
-            Reset();
+            ToIdle();
             data.groups.Clear();
-            analyzer.Dispose();
+            analyzer.Clear();
         }
         
         private void OnBatchAnalyzedHandler(List<KBatch> batches)
@@ -100,7 +101,7 @@ namespace SimpleX
             return group;
         }
 
-        private void OnMaterialDiryHandler()
+        private void OnDirtyHandler()
         {
             data.dirty = true;
         }

@@ -59,7 +59,7 @@ namespace SimpleX
             else
             {
                 var item = GetItem(selectedIds[0]);
-                onSelectionChanged?.Invoke(item.what);
+                onSelectionChanged?.Invoke(item.userData);
             }
         }
 

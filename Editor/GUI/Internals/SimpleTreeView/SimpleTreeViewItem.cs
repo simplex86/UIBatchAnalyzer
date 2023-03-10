@@ -14,7 +14,7 @@ namespace SimpleX
 
         public SimpleTreeViewItem this[int index] => children[index] as SimpleTreeViewItem;
         
-        public object what { get; set; } = null;
+        public object userData { get; set; } = null;
 
         public void Clear()
         {

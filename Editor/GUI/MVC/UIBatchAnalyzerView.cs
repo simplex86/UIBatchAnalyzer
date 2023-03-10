@@ -16,8 +16,9 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
         private bool isDirty = false;
 
+        private static GUIStyle _style_ = null;
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v0.8.1";
+        private const string _version_ = "v0.9.2";
 
         public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
         {
@@ -37,6 +38,9 @@ namespace SimpleX
             EditorApplication.playModeStateChanged += OnPlayModeStateChangedHandler;
             EditorApplication.update += OnUpdate;
             EditorApplication.hierarchyChanged += OnHierarchyChange;
+            
+            data.OnEnable();
+            ctrl.OnEnable();
 
             ctrl.OnAnalyzed = OnAnalyzedHandler;
         }
@@ -53,7 +57,8 @@ namespace SimpleX
             EditorApplication.update -= OnUpdate;
             EditorApplication.hierarchyChanged -= OnHierarchyChange;
             
-            ctrl.OnAnalyzed = null;
+            data.OnDisable();
+            ctrl.OnDisable();
         }
 
         public void OnGUI()
@@ -70,10 +75,11 @@ namespace SimpleX
                 {
                     EditorGUILayout.HelpBox("Analyzing Now, please wait", MessageType.Info);
                 }
+                GUILayout.FlexibleSpace();
             }
             else
             {
-                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.BeginHorizontal(GUILayout.ExpandHeight(true));
                 {
                     spliteview.BeginSplitView();
                     OnBatchesViewGUI();
@@ -88,6 +94,8 @@ namespace SimpleX
                     SceneView.RepaintAll();
                 }
             }
+
+            OnStatusGUI();
         }
 
         public void OnUpdate()
@@ -111,16 +119,15 @@ namespace SimpleX
         {
             if (data.enabled)
             {
-                selectedItem = null;
                 // OnHierarchyChange 消息可能会延迟几帧，
                 // 为了能在Hierarchy变化时自动重新计算合批，暂时采用这种方式
                 if (data.state == EAnalysisState.Analyzed)
                 {
-                    ctrl.Reset();
+                    ctrl.ToIdle();
                 }
                 else if (data.state == EAnalysisState.Idle)
                 {
-                    OnAnalysis();
+                    data.dirty = true;
                 }
             }
         }
@@ -157,16 +164,40 @@ namespace SimpleX
 
                 GUI.color = Color.gray;
                 {
-                    EditorGUILayout.LabelField($"{_name_} {_version_}", GUILayout.Width(170));
+                    if (_style_ == null)
+                    {
+                        _style_ = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleRight };
+                    }
+                    EditorGUILayout.LabelField($"{_name_} {_version_}", _style_);
                 }
                 GUI.color = Color.white;
                 
-                GUI.enabled = !analyzing;
-                if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50)))
+                // GUI.enabled = !analyzing;
+                // if (GUILayout.Button("Clear", EditorStyles.toolbarButton, GUILayout.Width(50)))
+                // {
+                //     OnClear();
+                // }
+                // GUI.enabled = true;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void OnStatusGUI()
+        {
+            EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+            {
+                GUI.color = Color.gray;
+                if (data.enabled)
                 {
-                    OnClear();
+                    var canvasCount = data.groups.Count;
+                    var batchCount = 0;
+                    foreach (var group in data.groups)
+                    {
+                        batchCount += group.batchCount;
+                    }
+                    EditorGUILayout.LabelField($"Canvas Count: {canvasCount}, Batch Count: {batchCount}");
                 }
-                GUI.enabled = true;
+                GUI.color = Color.white;
             }
             EditorGUILayout.EndHorizontal();
         }
@@ -197,31 +228,34 @@ namespace SimpleX
             foreach (var group in data.groups)
             {
                 var canvasItem = new SimpleTreeViewItem(group.canvas.name);
-                canvasItem.what = group;
+                canvasItem.userData = group;
+                
+                batchview.AddChild(canvasItem);
+                batchview.SetExpanded(canvasItem.id, true);
 
-                foreach (var batch in group.batches)
+                for (int i=0; i<group.batchCount; i++)
                 {
-                    var batchItem = new SimpleTreeViewItem("Batch");
-                    batchItem.what = batch;
+                    var batch = group.batches[i];
+                    var batchItem = new SimpleTreeViewItem($"Batch ({i+1} / {group.batchCount})");
+                    batchItem.userData = batch;
 
                     foreach (var instruction in batch.instructions)
                     {
                         var instructionItem = new SimpleTreeViewItem(instruction.name);
-                        instructionItem.what = instruction;
+                        instructionItem.userData = instruction;
                         
                         batchItem.AddChild(instructionItem);
                     }
-                    
                     canvasItem.AddChild(batchItem);
+
+                    batchview.SetExpanded(batchItem.id, false);
                 }
-                
-                batchview.AddChild(canvasItem);
             }
             
             if (data.groups.Count > 0)
             {
                 batchview.Reload();
-                batchview.ExpandAll();
+                // batchview.ExpandAll();
             }
         }
 
@@ -268,7 +302,7 @@ namespace SimpleX
         
         private void OnBatchGUI(KBatch batch)
         {
-            OnMaskInfoGUI(batch.isMask, batch.isUnmask);
+            OnMaskInfoGUI(batch.maskType);
             OnMaterialInfoGUI(batch.material);
             OnSpriteAtlasInfoGUI(batch.spriteAtlas);
             OnTextureInfoGUI(batch.texture);
@@ -280,7 +314,6 @@ namespace SimpleX
         private void OnInstructionGUI(KInstruction instruction)
         {
             EditorGUILayout.ObjectField("Game Object", instruction.gameObject, typeof(GameObject));
-            OnMaskInfoGUI(instruction.isMask, instruction.isUnmask);
             OnMaterialInfoGUI(instruction.material);
             OnSpriteAtlasInfoGUI(instruction.spriteAtlas);
             OnTextureInfoGUI(instruction.texture);
@@ -289,15 +322,15 @@ namespace SimpleX
             EditorGUILayout.TextField("Vertex Count", instruction.vertexCount.ToString());
         }
 
-        private void OnMaskInfoGUI(bool isMask, bool isUnmask)
+        private void OnMaskInfoGUI(EMaskType maskType)
         {
-            if (isMask)
+            if (maskType == EMaskType.Mask)
             {
-                EditorGUILayout.HelpBox("Mask", MessageType.None);
+                EditorGUILayout.HelpBox("Batch for Mask", MessageType.Info);
             }
-            else if (isUnmask)
+            else if (maskType == EMaskType.Unmask)
             {
-                EditorGUILayout.HelpBox("Unmask", MessageType.None);
+                EditorGUILayout.HelpBox("Batch for Unmask", MessageType.Info);
             }
         }
 
@@ -307,9 +340,8 @@ namespace SimpleX
             {
                 EditorGUILayout.ObjectField("Material", material, typeof(Material));
 
-                var materialName = material.name;
                 var materialIID = material.GetInstanceID();
-                EditorGUILayout.HelpBox($"Name = {materialName}, ID = {materialIID}", MessageType.None);
+                EditorGUILayout.HelpBox($"ID: {materialIID}", MessageType.Info);
             }
         }
         
@@ -319,9 +351,8 @@ namespace SimpleX
             {
                 EditorGUILayout.ObjectField("Sprite Atlas", spriteAtlas, typeof(SpriteAtlas));
 
-                var textureName = spriteAtlas.name;
                 var textureIID = spriteAtlas.GetInstanceID();
-                EditorGUILayout.HelpBox($"Name = {textureName}, ID = {textureIID}", MessageType.None);
+                EditorGUILayout.HelpBox($"ID: {textureIID}", MessageType.Info);
             }
         }
         
@@ -331,9 +362,8 @@ namespace SimpleX
             {
                 EditorGUILayout.ObjectField("Texture", texture, typeof(Texture));
 
-                var textureName = texture.name;
                 var textureIID = texture.GetInstanceID();
-                EditorGUILayout.HelpBox($"Name = {textureName}, ID = {textureIID}", MessageType.None);
+                EditorGUILayout.HelpBox($"ID: {textureIID}", MessageType.Info);
             }
         }
         

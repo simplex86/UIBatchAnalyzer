@@ -6,6 +6,13 @@ using UnityEngine.UI;
 
 namespace SimpleX
 {
+    public enum EMaskType
+    {
+        None,
+        Mask,
+        Unmask,
+    }
+    
     public class KInstruction
     {
         public int renderOrder { get; } = 0;
@@ -17,8 +24,7 @@ namespace SimpleX
         public Material material { get; } = null;
         public Texture texture => (materialTexture == null) ? graphicTexture : materialTexture;
         public SpriteAtlas spriteAtlas { get; } = null;
-        public bool isMask { get; } = false;
-        public bool isUnmask { get; } = false;
+        public EMaskType maskType { get; } = EMaskType.None;
         public RectMask2D rectmask2d { get; } = null;
         public int vertexCount => (mesh == null) ? 0 : mesh.vertexCount;
         
@@ -32,8 +38,7 @@ namespace SimpleX
             this.material = graphic.materialForRendering;
             this.mesh = mesh;
             this.renderOrder = renderOrder;
-            this.isMask = false;
-            this.isUnmask = false;
+            this.maskType = EMaskType.None;
 
             var image = graphic as Image;
             if (image != null)
@@ -43,15 +48,12 @@ namespace SimpleX
             }
         }
 
-        public KInstruction(MaskableGraphic graphic, KMesh mesh, int renderOrder, Mask mask, bool isUnmask = false)
+        public KInstruction(MaskableGraphic graphic, KMesh mesh, int renderOrder, Mask mask, EMaskType maskType)
             : this(graphic, mesh, renderOrder)
         {
-            this.isMask = true;
-            this.isUnmask = isUnmask;
-            
-            if (isUnmask)
+            this.maskType = maskType;
+            if (maskType == EMaskType.Unmask)
             {
-                this.isMask = false;
                 material = GetUnmaskMaterial(mask);
             }
         }
@@ -210,7 +212,16 @@ namespace SimpleX
 
         private bool IsSamePlane(KInstruction instruction)
         {
-            // TODO 是否在同一个平面上
+            foreach (var v in mesh.triangles)
+            {
+                foreach (var u in instruction.mesh.triangles)
+                {
+                    if (!v.IsSamePlane(u))
+                    {
+                        return false;
+                    }
+                }
+            }
             return true;
         }
     }

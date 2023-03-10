@@ -32,7 +32,7 @@ namespace SimpleX
         
         public void Analysis()
         {
-            Dispose();
+            Clear();
 
             var canvases = Transform.FindObjectsOfType<Canvas>(false);
             // 注入mesh
@@ -57,7 +57,7 @@ namespace SimpleX
                 }
                 OnAnalyzed?.Invoke(batches);
                 
-                Dispose();
+                Clear();
             }
         }
 
@@ -67,7 +67,7 @@ namespace SimpleX
             return canvas.gameObject.activeInHierarchy && canvas.enabled;
         }
 
-        public void Dispose()
+        public void Clear()
         {
             completed = false;
             totalMeshCount = 0;
@@ -77,6 +77,13 @@ namespace SimpleX
             wcanvas.Clear();
             
             UninjectMeshes();
+        }
+
+        public void Dispose()
+        {
+            Clear();
+            OnDirty = null;
+            OnAnalyzed = null;
         }
 
         private void InjectMesh(MaskableGraphic graphic, KMesh kmesh)
@@ -164,13 +171,13 @@ namespace SimpleX
                 var renderabled = IsRenderabledGraphic(graphic);
                 if (renderabled)
                 {
-                    graphic.UnregisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
-                    graphic.RegisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
+                    UnregisterGraphicDirtyHandlers(graphic);
+                    RegisterGraphicDirtyHandlers(graphic);
                     
                     kmesh = new KMesh(gameObject.transform);
                     if (mask != null)
                     {
-                        instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, false));
+                        instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, EMaskType.Mask));
                     }
                     else if (rectmask2d != null)
                     {
@@ -198,7 +205,7 @@ namespace SimpleX
                 if (renderabled && mask != null) 
                 {
                     // 在最后添加一个unmask instruction，并和mask共享kmesh
-                    instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, true));
+                    instructions.Add(new KInstruction(graphic, kmesh, renderOrder, mask, EMaskType.Unmask));
                     renderOrder++;
                 }
             }
@@ -259,7 +266,7 @@ namespace SimpleX
             while (true)
             {
                 var canvas = transform.GetComponent<Canvas>();
-                if (canvas != null && canvas.enabled)
+                if (canvas != null && IsCanvasEnabled(canvas))
                 {
                     var canvasGroup = transform.GetComponent<CanvasGroup>();
                     if (canvasGroup != null && canvasGroup.enabled)
@@ -307,7 +314,8 @@ namespace SimpleX
                 if (a.depth < b.depth) return -1;
                 if (a.depth > b.depth) return  1;
                 // unmask排序 
-                if (a.isUnmask && b.isUnmask)
+                if (a.maskType == EMaskType.Unmask && 
+                    b.maskType == EMaskType.Unmask)
                 {
                     return Sort(b, a);
                 }
@@ -333,6 +341,7 @@ namespace SimpleX
             var m2 = b.material;
             if (m1.GetInstanceID() < m2.GetInstanceID()) return -1;
             if (m1.GetInstanceID() > m2.GetInstanceID()) return  1;
+            
             if (a.spriteAtlas == null || b.spriteAtlas == null)
             {
                 // 按纹理ID升序
@@ -352,6 +361,7 @@ namespace SimpleX
                 if (s1.GetInstanceID() < s2.GetInstanceID()) return -1;
                 if (s1.GetInstanceID() > s2.GetInstanceID()) return 1;
             }
+            
             // 按renderOrder升序
             return (a.renderOrder < b.renderOrder) ? -1 : 1;
         }
@@ -414,7 +424,10 @@ namespace SimpleX
             while (rectmask2d == null)
             {
                 transform = transform.parent;
-                if (transform == null) break;
+                if (transform == null || transform.GetComponent<Canvas>() != null)
+                {
+                    break;
+                }
                 
                 rectmask2d = transform.GetComponent<RectMask2D>();
             }
@@ -422,9 +435,35 @@ namespace SimpleX
             return rectmask2d;
         }
 
+        private void RegisterGraphicDirtyHandlers(Graphic graphic)
+        {
+            graphic.RegisterDirtyLayoutCallback(OnGraphicLayoutDirtyHandler);
+            graphic.RegisterDirtyVerticesCallback(OnGraphicVertexesDirtyHandler);
+            graphic.RegisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
+        }
+        
+        private void UnregisterGraphicDirtyHandlers(Graphic graphic)
+        {
+            graphic.UnregisterDirtyLayoutCallback(OnGraphicLayoutDirtyHandler);
+            graphic.UnregisterDirtyVerticesCallback(OnGraphicVertexesDirtyHandler);
+            graphic.UnregisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
+        }
+        
+        private void OnGraphicLayoutDirtyHandler()
+        {
+            // Debug.Log("OnGraphicLayoutDirtyHandler");
+            OnDirty?.Invoke();
+        }
+
+        private void OnGraphicVertexesDirtyHandler()
+        {
+            // Debug.Log("OnGraphicVertexesDirtyHandler");
+            OnDirty?.Invoke();
+        }
+
         private void OnGraphicMaterialDirtyHandler()
         {
-            Debug.Log("OnGraphicMaterialDirtyHandler");
+            // Debug.Log("OnGraphicMaterialDirtyHandler");
             OnDirty?.Invoke();
         }
     }
