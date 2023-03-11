@@ -5,7 +5,7 @@ using UnityEngine.U2D;
 
 namespace SimpleX
 {
-    public class KBatch
+    public class KBatch : IRenderable
     {
         // Canvas
         public Canvas canvas { get; } = null;

@@ -13,7 +13,7 @@ namespace SimpleX
         Unmask,
     }
     
-    public class KInstruction
+    public class KInstruction : IRenderable
     {
         public int renderOrder { get; } = 0;
         public KInstruction bottom { get; private set; } = null;

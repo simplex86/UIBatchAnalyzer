@@ -15,6 +15,8 @@
 - [X] Mask
 - [X] RectMask2D
 - [X] Nested Canvas
+- [ ] 3D UI
+> Position的Z轴不为0或Rotation的Y轴不为0时，UGUI会把该节点及其子节点当做**3D UI**，它们不参与2D UI的合批。具体的合批规则还没有查到确信的资料，还在试验总结其规律。<br>所以在使用UGUI拼界面时，确保各个节点Position的Z轴和Rotation的Y轴的值为0，避免增加不必要的Drawcall。
 
 ## 使用指南
 1. 菜单 SimpleX -> UIBatch Profiler，打开UGUI Batch窗口<br>![ugui_batch_03.png](https://github.com/simplex86/UIBatchAnalyzer/blob/main/_Doc/Images/ugui_batch_03.png)
