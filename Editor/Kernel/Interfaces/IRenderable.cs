@@ -10,5 +10,6 @@ namespace SimpleX
         Texture texture { get; }
         SpriteAtlas spriteAtlas { get; }
         EMaskType maskType { get; }
+        int vertexCount { get; }
     }
 }

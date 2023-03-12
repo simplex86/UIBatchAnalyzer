@@ -236,7 +236,7 @@ namespace SimpleX
                 for (int i=0; i<group.batchCount; i++)
                 {
                     var batch = group.batches[i];
-                    var batchItem = new SimpleTreeViewItem($"Batch ({i+1} / {group.batchCount})");
+                    var batchItem = new SimpleTreeViewItem($"Batch ( {i+1} / {group.batchCount} )");
                     batchItem.userData = batch;
 
                     foreach (var instruction in batch.instructions)
@@ -274,7 +274,7 @@ namespace SimpleX
             {
                 if (selectedItem == null)
                 {
-                    EditorGUILayout.HelpBox("Select a item, then the information will be shown here", MessageType.Info);
+                    EditorGUILayout.HelpBox("Select an item to show the informations here", MessageType.Info);
                 }
                 else if (selectedItem is kCanvas)
                 {
@@ -294,32 +294,33 @@ namespace SimpleX
 
         private void OnCanvasGUI(kCanvas canvas)
         {
-            EditorGUILayout.ObjectField("Canvas", canvas.canvas, typeof(Canvas));
-            EditorGUILayout.TextField("Batch Count", canvas.batchCount.ToString());
-            EditorGUILayout.TextField("Instruction Count", canvas.instructionCount.ToString());
-            EditorGUILayout.TextField("Vertex Count", canvas.vertexCount.ToString());
+            // EditorGUILayout.ObjectField("Canvas", canvas.canvas, typeof(Canvas));
+            EditorGUILayout.LabelField("Batches", canvas.batchCount.ToString());
+            EditorGUILayout.LabelField("Instructions", canvas.instructionCount.ToString());
+            EditorGUILayout.LabelField("Vertexes", canvas.vertexCount.ToString());
         }
         
         private void OnBatchGUI(KBatch batch)
         {
-            OnMaskInfoGUI(batch.maskType);
-            OnMaterialInfoGUI(batch.material);
-            OnSpriteAtlasInfoGUI(batch.spriteAtlas);
-            OnTextureInfoGUI(batch.texture);
-            EditorGUILayout.TextField("Depth", batch.depth.ToString());
-            EditorGUILayout.TextField("Instruction Count", batch.instructionCount.ToString());
-            EditorGUILayout.TextField("Vertex Count", batch.vertexCount.ToString());
+            OnRenderableGUI(batch);
+            EditorGUILayout.LabelField("Instructions", batch.instructionCount.ToString());
         }
         
         private void OnInstructionGUI(KInstruction instruction)
         {
-            EditorGUILayout.ObjectField("Game Object", instruction.gameObject, typeof(GameObject));
-            OnMaterialInfoGUI(instruction.material);
-            OnSpriteAtlasInfoGUI(instruction.spriteAtlas);
-            OnTextureInfoGUI(instruction.texture);
-            EditorGUILayout.TextField("Depth", instruction.depth.ToString());
-            EditorGUILayout.TextField("Render Order", instruction.renderOrder.ToString());
-            EditorGUILayout.TextField("Vertex Count", instruction.vertexCount.ToString());
+            // EditorGUILayout.ObjectField("Game Object", instruction.gameObject, typeof(GameObject));
+            OnRenderableGUI(instruction);
+            EditorGUILayout.LabelField("Render Order", instruction.renderOrder.ToString());
+        }
+
+        private void OnRenderableGUI(IRenderable renderer)
+        {
+            OnMaskInfoGUI(renderer.maskType);
+            OnMaterialInfoGUI(renderer.material);
+            OnSpriteAtlasInfoGUI(renderer.spriteAtlas);
+            OnTextureInfoGUI(renderer.texture);
+            EditorGUILayout.LabelField("Depth", renderer.depth.ToString());
+            EditorGUILayout.LabelField("Vertexes", renderer.vertexCount.ToString());
         }
 
         private void OnMaskInfoGUI(EMaskType maskType)
@@ -424,9 +425,27 @@ namespace SimpleX
             }
         }
 
-        private void OnSelectionChangedHandler(object seleced)
+        private void OnSelectionChangedHandler(object selected)
         {
-            selectedItem = seleced;
+            selectedItem = selected;
+
+            if (selected != null)
+            {
+                if (selectedItem is kCanvas)
+                {
+                    var kcanvas = selectedItem as kCanvas;
+                    Selection.activeObject = kcanvas.canvas;
+                }
+                else if (selectedItem is KBatch)
+                {
+                    // nothing to do
+                }
+                else if (selectedItem is KInstruction)
+                {
+                    var kinstruction = selectedItem as KInstruction;
+                    Selection.activeObject = kinstruction.gameObject;
+                }
+            }
         }
         
         private void OnPlayModeStateChangedHandler(PlayModeStateChange state)
