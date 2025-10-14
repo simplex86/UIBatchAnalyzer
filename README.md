@@ -7,6 +7,9 @@
 
 ![ugui_batch_02.png](./doc/images/ugui_batch_02.png)
 
+> [!IMPORTANT]  
+> UGUI 合批的原理和细节，详见文档： [UGUI 合批原理](./doc/theory/theory.md) 
+
 ## Feature
 - [X] Text (Legacy)
 - [X] TextMeshPro
@@ -58,4 +61,4 @@ UGUI中的3D UI有几个特点
 
 ## UGUI 合批原理
 
-在写本工具时，查了不少资料也做了不少实验，将这些信息整理成 [UGUI 合批原理](./doc/theory/theory.md) 文档
+在编写本工具时，查了不少资料也做了不少实验，现将这些信息整理成文档：[UGUI 合批原理](./doc/theory/theory.md) 

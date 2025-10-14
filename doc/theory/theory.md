@@ -213,4 +213,5 @@ RectMask2D 不需要依赖 Image 组件，其裁剪区域就是它的 RectTransf
 - [UGUI 之 Mask 和 RectMask2D 与 drawcall](https://blog.csdn.net/akak2010110/article/details/80964416)
 - [UGUI合批源码分析及优化](https://blog.csdn.net/qq826364410/article/details/80983861)
 
-> 文中涉及的所有（疑似）uGUI 源码都基于 Unity 4.6 版本
+> [!TIP]  
+> 文中涉及的所有（疑似）uGUI 源码都来自网络
