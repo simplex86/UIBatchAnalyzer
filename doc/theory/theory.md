@@ -17,7 +17,7 @@
 - 以 Canvas 为单位进行批次生成和渲染（Canvas 可以嵌套）
 - 材质球（材质球的 instanceId 和纹理的 instanceId）相同的两个 UI 控件才**有可能**合批
 
-![](./images/14.png)
+![](./images/01.png)
 
 ## 合批流程
 
@@ -28,7 +28,7 @@
 - Canvas 数据更新时（m_CanvasData.orderIsDirty == true），计算 UI Instructions 的 depth 并排序、生成 Batch
     > 层次结构改变，同步关键数据，Canvas.Awake等情况都可以引发 Canvas 数据更新
 
-![](./images/15.png)
+![](./images/02.png)
 
 ### 计算 Depth
 
@@ -46,9 +46,7 @@ A 是 B 的 BottomUI 需要满足：
 
 看以下示例
 
-![](./images/01.png)
-
-![](./images/02.png)
+![](./images/03.png)
 
 Text 和 Image 的 mesh（黑色线框）是没有相交的，但他们的 RectTransform 却是相交的。此时，Text 不能算作 Image 的 BottomUI，因为不满足第1条。
 
@@ -63,16 +61,18 @@ Text 和 Image 的 mesh（黑色线框）是没有相交的，但他们的 RectT
         - 否则，depth = BottomUI.depth + 1
     - 否则，depth = 0
 
+![](./images/04.png)
+
+流程如下图
+
+![](./images/05.png)
+
 > [!IMPORTANT]  
 > Depth 是 UGUI 渲染排序的**第一参考值**
 
-![](./images/03.png)
-
 看以下示例
 
-![](./images/04.png)
-
-![](./images/05.png)
+![](./images/06.png)
 
 深度优先遍历，得到 UI 控件遍历顺序：I1、T1、I2、R2、R1。根据 Depth 的计算规则，得到每个 UI 控件的 Depth 值
 
@@ -93,19 +93,17 @@ Text 和 Image 的 mesh（黑色线框）是没有相交的，但他们的 RectT
 
 - 依次根据Depth、material ID、texture ID、RendererOrder（即UI层级队列顺序，HierarchyOrder）排序（条件的优先级依次递减），剔除depth == -1的UI元素，得到合批前的 UI 元素队列VisiableList
 
-    ![](./images/13.png)
+    ![](./images/07.png)
 
     其中的 renderOrder 可以理解为 siblingIndex，更直观的表示如下图
 
-    ![](./images/06.png)
+    ![](./images/08.png)
 
 - 对 VisiableList 中相邻且可以合批（相同material和texture等）的 UI 元素合并批次，然后再生成相应 mesh 数据进行绘制。
 
 看以下示例
 
-![](./images/07.png)
-
-![](./images/08.png)
+![](./images/09.png)
 
 | 名字 | 材质球 | 纹理 |
 |------|------|------|
@@ -114,13 +112,7 @@ Text 和 Image 的 mesh（黑色线框）是没有相交的，但他们的 RectT
 | R1 | M_InstID_Bigger | texture_InstID_Bigger |
 | T1 | UI Default Matiaral(UGUI 默认材质球) | Font Texture(unity自带的一个字体纹理) |
 
-![](./images/09.png)
-
 ![](./images/10.png)
-
-![](./images/11.png)
-
-![](./images/12.png)
 
 - 步骤1：计算各个 UI 控件的 Depth 值
 
