@@ -185,6 +185,7 @@ RectMask2D 不需要依赖 Image 组件，其裁剪区域就是它的 RectTransf
 - 计算 Depth 时，RectMask2D 都按普通 UI 节点看待，但不能看做任何 UI 控件的BottomUI
     > 因为它没有 CanvasRenderer 组件
 
+> [!NOTE]  
 > RectMask2D 的原理是先将那些不在其矩形范围内的元素透明度设置为0，然后通过 Shader 丢弃掉透明度小于 0.001 的元素。  
 > 详见：[Unity遮罩之RectMask2D详细解读](https://www.cnblogs.com/iwiniwin/p/15170384.html)
 
