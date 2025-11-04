@@ -5,10 +5,10 @@
 
 所以开发了这个分析UGUI合批情况的工具，可以作为FrameDebugger的辅助和补充
 
-![ugui_batch_02.png](./doc/images/ugui_batch_02.png)
+![ugui_batch_02.png](./img/ugui_batch_02.png)
 
 > [!IMPORTANT]  
-> UGUI 合批的原理和细节，详见文档： [UGUI 合批原理](./doc/theory/theory.md) 
+> UGUI 合批的原理和细节，详见文档： [UGUI 合批原理](https://github.com/simplex86/cheatsheet-uguibatch) 
 
 ## Feature
 - [X] Text (Legacy)
@@ -20,9 +20,9 @@
 - [X] Nested Canvas
 
 ## 使用指南
-- 菜单 SimpleX -> UIBatch Profiler，打开UGUI Batch窗口<br>![ugui_batch_03.png](./doc/images/ugui_batch_03.png)
-- 点击“Enable”按钮，启动Batch分析功能<br>![ugui_batch_04.png](./doc/images/ugui_batch_04.png)
-- 左边列出每个Canvas下的Batch及其UI控件的组成。选中某个节点后，会在右边显示详细信息<br>![ugui_batch_05.png](./doc/images/ugui_batch_05.png)
+- 菜单 SimpleX -> UIBatch Profiler，打开UGUI Batch窗口<br>![ugui_batch_03.png](./img/ugui_batch_03.png)
+- 点击“Enable”按钮，启动Batch分析功能<br>![ugui_batch_04.png](./img/ugui_batch_04.png)
+- 左边列出每个Canvas下的Batch及其UI控件的组成。选中某个节点后，会在右边显示详细信息<br>![ugui_batch_05.png](./img/ugui_batch_05.png)
 - 点击“Disable”按钮，关闭Batch分析功能
 
 > [!NOTE]  
@@ -61,4 +61,4 @@ UGUI中的3D UI有几个特点
 
 ## UGUI 合批原理
 
-在编写本工具时，查了不少资料也做了不少实验，现将这些信息整理成文档：[UGUI 合批原理](./doc/theory/theory.md) 
+在编写本工具时，查了不少资料也做了不少实验，现将这些信息整理成文档：[UGUI 合批原理](https://github.com/simplex86/cheatsheet-uguibatch) 
