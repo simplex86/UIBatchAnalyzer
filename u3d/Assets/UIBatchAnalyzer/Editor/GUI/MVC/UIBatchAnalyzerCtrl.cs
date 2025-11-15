@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace SimpleX
@@ -86,7 +85,7 @@ namespace SimpleX
             }
         }
         
-        private kCanvas AllocGroup(Canvas canvas)
+        private KCanvas AllocGroup(Canvas canvas)
         {
             var groups = data.groups;
             
@@ -95,7 +94,7 @@ namespace SimpleX
                 if (g.canvas == canvas) return g;
             }
 
-            var group = new kCanvas(canvas);
+            var group = new KCanvas(canvas);
             groups.Add(group);
 
             return group;

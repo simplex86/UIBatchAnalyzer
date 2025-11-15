@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.U2D;
 using UnityEditor;
 
 namespace SimpleX
@@ -25,7 +21,7 @@ namespace SimpleX
             var ctrl = new UIBatchAnalyzerCtrl(data);
             ctrl.OnEnable();
             
-            view = new UIBatchAnalyzerView(data, ctrl);
+            view = new UIBatchAnalyzerView(data, ctrl, "1.0.2");
             view.OnEnable();
         }
 

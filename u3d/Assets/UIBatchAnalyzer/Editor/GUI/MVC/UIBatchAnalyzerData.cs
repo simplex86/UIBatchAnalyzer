@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 namespace SimpleX
 {
@@ -15,11 +14,11 @@ namespace SimpleX
         public bool enabled { get; set; } = false;
         public bool dirty { get; set; } = false;
         public EAnalysisState state { get; set; } = EAnalysisState.Idle;
-        public List<kCanvas> groups { get; private set; }
+        public List<KCanvas> groups { get; private set; }
 
         public void OnEnable()
         {
-            groups = new List<kCanvas>();
+            groups = new List<KCanvas>();
         }
 
         public void OnDisable()

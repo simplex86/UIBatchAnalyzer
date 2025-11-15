@@ -16,14 +16,16 @@ namespace SimpleX
         private Color gizmosColor = Color.red;
         private bool isDirty = false;
 
+        private readonly string _version_ = "v1.0.0";
         private static GUIStyle _style_ = null;
         private const string _name_ = "UGUI Batch Analyzer";
-        private const string _version_ = "v1.0.0";
 
-        public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl)
+        public UIBatchAnalyzerView(UIBatchAnalyzerData data, UIBatchAnalyzerCtrl ctrl, string version)
         {
             this.data = data;
             this.ctrl = ctrl;
+
+            _version_ = version;
         }
 
         public void OnEnable()
@@ -276,9 +278,9 @@ namespace SimpleX
                 {
                     EditorGUILayout.HelpBox("Select an item to show the informations here", MessageType.Info);
                 }
-                else if (selectedItem is kCanvas)
+                else if (selectedItem is KCanvas)
                 {
-                    OnCanvasGUI(selectedItem as kCanvas);
+                    OnCanvasGUI(selectedItem as KCanvas);
                 }
                 else if (selectedItem is KBatch)
                 {
@@ -292,7 +294,7 @@ namespace SimpleX
             EditorGUILayout.EndVertical();
         }
 
-        private void OnCanvasGUI(kCanvas canvas)
+        private void OnCanvasGUI(KCanvas canvas)
         {
             // EditorGUILayout.ObjectField("Canvas", canvas.canvas, typeof(Canvas));
             EditorGUILayout.LabelField("Batches", canvas.batchCount.ToString());
@@ -376,9 +378,9 @@ namespace SimpleX
 
                 Handles.color = gizmosColor;
                 {
-                    if (selectedItem is kCanvas)
+                    if (selectedItem is KCanvas)
                     {
-                        OnDrawCanvasGizmos(selectedItem as kCanvas);
+                        OnDrawCanvasGizmos(selectedItem as KCanvas);
                     }
                     else if (selectedItem is KBatch)
                     {
@@ -393,7 +395,7 @@ namespace SimpleX
             }
         }
 
-        private void OnDrawCanvasGizmos(kCanvas canvas)
+        private void OnDrawCanvasGizmos(KCanvas canvas)
         {
             foreach (var batch in canvas.batches)
             {
@@ -431,9 +433,9 @@ namespace SimpleX
 
             if (selected != null)
             {
-                if (selectedItem is kCanvas)
+                if (selectedItem is KCanvas)
                 {
-                    var kcanvas = selectedItem as kCanvas;
+                    var kcanvas = selectedItem as KCanvas;
                     Selection.activeObject = kcanvas.canvas;
                 }
                 else if (selectedItem is KBatch)

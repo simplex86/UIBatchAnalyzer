@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SimpleX
 {
-    public class kCanvas
+    public class KCanvas
     {
         public Canvas canvas { get; } = null;
         public List<KBatch> batches { get; } = new List<KBatch>();
@@ -11,7 +11,7 @@ namespace SimpleX
         public int vertexCount { get; private set; } = 0;
         public int batchCount => batches.Count;
 
-        public kCanvas(Canvas canvas)
+        public KCanvas(Canvas canvas)
         {
             this.canvas = canvas;
         }
