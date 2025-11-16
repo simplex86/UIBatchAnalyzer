@@ -4,6 +4,9 @@ using UnityEngine.U2D;
 
 namespace SimpleX
 {
+    /// <summary>
+    /// 渲染批次
+    /// </summary>
     public class KBatch : IRenderable
     {
         // Canvas

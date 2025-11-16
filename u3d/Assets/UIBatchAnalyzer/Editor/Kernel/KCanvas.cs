@@ -16,12 +16,31 @@ namespace SimpleX
             this.canvas = canvas;
         }
 
+        /// <summary>
+        /// 添加渲染批次
+        /// </summary>
+        /// <param name="batch"></param>
         public void AddBatch(KBatch batch)
         {
             batches.Add(batch);
+            Sort();
 
             instructionCount += batch.instructionCount;
             vertexCount += batch.vertexCount;
+        }
+
+        /// <summary>
+        /// 对渲染批次进行排序
+        /// </summary>
+        private void Sort()
+        {
+            batches.Sort((a, b) =>
+            {
+                if (a.depth < b.depth) return -1;
+                if (a.depth > b.depth) return 1;
+
+                return (a.minRenderOrder < b.minRenderOrder) ? -1 : 1;
+            });
         }
     }
 }
