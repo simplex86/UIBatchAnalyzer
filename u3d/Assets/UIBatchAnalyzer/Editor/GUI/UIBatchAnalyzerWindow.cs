@@ -2,14 +2,14 @@ using UnityEditor;
 
 namespace SimpleX
 {
-    class UIBatchProfilerWindow : EditorWindow
+    class UIBatchAnalyzerWindow : EditorWindow
     {
         private UIBatchAnalyzerView view;
 
-        [MenuItem("SimpleX/UIBatch Profiler")]
+        [MenuItem("SimpleX/UGUI Batch Analyzer")]
         private static void OnMenu()
         {
-            var window = GetWindow<UIBatchProfilerWindow>("UGUI Batch");
+            var window = GetWindow<UIBatchAnalyzerWindow>("UGUI Batch Analyzer");
             window.Show();
         }
 
@@ -21,7 +21,7 @@ namespace SimpleX
             var ctrl = new UIBatchAnalyzerCtrl(data);
             ctrl.OnEnable();
             
-            view = new UIBatchAnalyzerView(data, ctrl, "1.0.2");
+            view = new UIBatchAnalyzerView(data, ctrl, "v1.0.4");
             view.OnEnable();
         }
 

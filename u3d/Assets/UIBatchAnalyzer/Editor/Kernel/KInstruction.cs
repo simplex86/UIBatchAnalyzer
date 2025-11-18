@@ -118,7 +118,7 @@ namespace SimpleX
                 }
             }
             // 不同平面不能合
-            if (!IsSamePlane(instruction))
+            if (!IsZeroPZ(instruction))
             {
                 return false;
             }
@@ -144,7 +144,7 @@ namespace SimpleX
                 return false;
             }
             // 不同平面不能合
-            if (!IsSamePlane(instruction))
+            if (!IsZeroPZ(instruction))
             {
                 return false;
             }
@@ -210,13 +210,13 @@ namespace SimpleX
             return true;
         }
 
-        private bool IsSamePlane(KInstruction instruction)
+        private bool IsZeroPZ(KInstruction instruction)
         {
             foreach (var v in mesh.triangles)
             {
                 foreach (var u in instruction.mesh.triangles)
                 {
-                    if (!v.IsSamePlane(u))
+                    if (!v.IsZeroPZ(u))
                     {
                         return false;
                     }

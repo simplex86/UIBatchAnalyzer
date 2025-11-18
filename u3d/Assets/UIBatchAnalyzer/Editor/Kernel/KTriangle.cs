@@ -27,7 +27,7 @@ namespace SimpleX
                 {
                     var b1 = other[j + 0];
                     var b2 = other[j + 1];
-                    if (IsIntersectant2(a1, a2, b1, b2)) return true;
+                    if (IsIntersectant(a1, a2, b1, b2)) return true;
                 }
             }
             // 点是否包含：
@@ -35,44 +35,32 @@ namespace SimpleX
             // 2、再判断三角形B的点是否在三角形A内
             for (int i=0; i<3; i++)
             {
-                if (this.IsContain2(other[i])) return true;
+                if (this.IsContain(other[i])) return true;
             }
             for (int i=0; i<3; i++)
             {
-                if (other.IsContain2(this[i])) return true;
+                if (other.IsContain(this[i])) return true;
             }
 
             return false;
         }
 
         // 是否在同一平面内
-        public bool IsSamePlane(KTriangle other)
+        // TODO Z轴不相等则不在同一平面
+        public bool IsZeroPZ(KTriangle other)
         {
-            // TODO
+            for (int i = 0; i < 3; i++)
+            {
+                if (!Mathf.Approximately(this[i].z, other[i].z)) return false;
+            }
+
             return true;
         }
 
         public Vector3 this[int index] => vertices[index % 3];
 
         // 线段(a1,a2)和(b1, b2)是否相交
-        // TODO 有bug，暂未解决
         private bool IsIntersectant(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2)
-        {
-            var crossA = Mathf.Sign(Vector3.Cross(b2 - b1, a1 - b1).z);
-            var crossB = Mathf.Sign(Vector3.Cross(b2 - b1, a2 - b1).z);
-
-            if (Mathf.Approximately(crossA, crossB)) return false;
-
-            var crossC = Mathf.Sign(Vector3.Cross(a2 - a1, b1 - a1).z);
-            var crossD = Mathf.Sign(Vector3.Cross(a2 - a1, b2 - a1).z);
-
-            if (Mathf.Approximately(crossC, crossD)) return false;
-
-            return true;
-        }
-
-        // 线段(a1,a2)和(b1, b2)是否相交
-        private bool IsIntersectant2(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2)
         {
             if (Mathf.Abs((a2.y - a1.y) * (b1.x - b2.x) - (a2.x - a1.x) * (b1.y - b2.y)) < float.Epsilon)
             {
@@ -90,35 +78,12 @@ namespace SimpleX
             
             return false; // 直线相交但交点不在线段上
         }
-
-        // 点(p)是否在三角形内
-        private bool IsContain(Vector3 p)
-        {
-            var ab = vertices[1] - vertices[0];
-            var bc = vertices[2] - vertices[1];
-            var ca = vertices[0] - vertices[2];
-            
-            var ap = p - vertices[0];
-            var bp = p - vertices[1];
-            var cp = p - vertices[2];
-
-            var c1 = Mathf.Sign(Vector3.Cross(ab, ap).z);
-            var c2 = Mathf.Sign(Vector3.Cross(bc, bp).z);
-            var c3 = Mathf.Sign(Vector3.Cross(ca, cp).z);
-
-            if (Mathf.Approximately(c1, c2) && Mathf.Approximately(c2, c3) && Mathf.Approximately(c1, c3))
-            {
-                return true;
-            }
-
-            return false;
-        }
         
         private const float DEVIATION = 0.05f; // 误差
 
         // 点(p)是否在三角形内
         // 据说相比IsContains函数的精度高一些
-        private bool IsContain2(Vector3 p)
+        private bool IsContain(Vector3 p)
         {
             var d1 = vertices[1] - vertices[0];
             var d2 = vertices[2] - vertices[1];
