@@ -5,7 +5,7 @@
 
 所以开发了这个分析UGUI合批情况的工具，可以作为FrameDebugger的辅助和补充
 
-![ugui_batch_02.png](./img/ugui_batch_02.png)
+![ugui_batch_02.png](./img/ugui_batch_analyzer.webp)
 
 > [!IMPORTANT]  
 > UGUI 合批的原理和细节，详见文档： [UGUI 合批原理](https://github.com/simplex86/cheatsheet-uguibatch) 
