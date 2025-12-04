@@ -2,8 +2,14 @@ using UnityEngine;
 
 namespace SimpleX
 {
+    /// <summary>
+    /// 三角形
+    /// </summary>
     public class KTriangle
     {
+        /// <summary>
+        /// 顶点列表
+        /// </summary>
         private Vector3[] vertices = new Vector3[3];
 
         public KTriangle(Vector3 a, Vector3 b, Vector3 c)
@@ -13,8 +19,12 @@ namespace SimpleX
             vertices[2] = c;
         }
 
-        // 是否重叠
-        // TODO 算法很朴素，效率比较低
+        /// <summary>
+        /// 是否重叠
+        /// TODO 算法很朴素，效率比较低
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Overlap(KTriangle other)
         {
             // 边是否相交
@@ -45,8 +55,12 @@ namespace SimpleX
             return false;
         }
 
-        // 是否在同一平面内
-        // TODO Z轴不相等则不在同一平面
+        /// <summary>
+        /// 是否在同一平面内
+        /// TODO Z轴不相等则不在同一平面
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool IsZeroPZ(KTriangle other)
         {
             for (int i = 0; i < 3; i++)
@@ -59,7 +73,14 @@ namespace SimpleX
 
         public Vector3 this[int index] => vertices[index % 3];
 
-        // 线段(a1,a2)和(b1, b2)是否相交
+        /// <summary>
+        /// 线段(a1,a2)和(b1, b2)是否相交
+        /// </summary>
+        /// <param name="a1"></param>
+        /// <param name="a2"></param>
+        /// <param name="b1"></param>
+        /// <param name="b2"></param>
+        /// <returns></returns>
         private bool IsIntersectant(Vector3 a1, Vector3 a2, Vector3 b1, Vector3 b2)
         {
             if (Mathf.Abs((a2.y - a1.y) * (b1.x - b2.x) - (a2.x - a1.x) * (b1.y - b2.y)) < float.Epsilon)
@@ -81,8 +102,12 @@ namespace SimpleX
         
         private const float DEVIATION = 0.05f; // 误差
 
-        // 点(p)是否在三角形内
-        // 据说相比IsContains函数的精度高一些
+        /// <summary>
+        /// 点(p)是否在三角形内
+        /// 据说相比IsContains函数的精度高一些
+        /// </summary>
+        /// <param name="p"></param>
+        /// <returns></returns>
         private bool IsContain(Vector3 p)
         {
             var d1 = vertices[1] - vertices[0];

@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 namespace SimpleX
 {
+    /// <summary>
+    /// 分析器
+    /// </summary>
     public class KAnalyzer
     {
         private class WCanvas
@@ -29,6 +32,9 @@ namespace SimpleX
 
         public Action<List<KBatch>> OnAnalyzed;
         
+        /// <summary>
+        /// 分析
+        /// </summary>
         public void Analysis()
         {
             Clear();
@@ -44,6 +50,9 @@ namespace SimpleX
             }
         }
 
+        /// <summary>
+        /// 刷新
+        /// </summary>
         public void Tick()
         {
             if (completed)
@@ -60,12 +69,19 @@ namespace SimpleX
             }
         }
 
-        // Canvas是否可用
+        /// <summary>
+        /// Canvas是否可用
+        /// </summary>
+        /// <param name="canvas"></param>
+        /// <returns></returns>
         private bool IsCanvasEnabled(Canvas canvas)
         {
             return canvas.gameObject.activeInHierarchy && canvas.enabled;
         }
 
+        /// <summary>
+        /// 清空
+        /// </summary>
         public void Clear()
         {
             completed = false;
@@ -78,6 +94,9 @@ namespace SimpleX
             UninjectMeshes();
         }
 
+        /// <summary>
+        /// 销毁
+        /// </summary>
         public void Dispose()
         {
             Clear();
@@ -85,6 +104,11 @@ namespace SimpleX
             OnAnalyzed = null;
         }
 
+        /// <summary>
+        /// 注入UIMesh组件
+        /// </summary>
+        /// <param name="graphic"></param>
+        /// <param name="kmesh"></param>
         private void InjectMesh(MaskableGraphic graphic, KMesh kmesh)
         {
             totalMeshCount++;
@@ -123,6 +147,9 @@ namespace SimpleX
             }
         }
 
+        /// <summary>
+        /// 销毁已注入的UIMesh组件
+        /// </summary>
         private void UninjectMeshes()
         {
             var meshes = Transform.FindObjectsOfType<UIMesh>();
@@ -132,6 +159,11 @@ namespace SimpleX
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="canvas"></param>
+        /// <returns></returns>
         private List<KInstruction> AllocInstructions(Canvas canvas)
         {
             foreach (var v in wcanvas)
@@ -148,14 +180,23 @@ namespace SimpleX
             return c.instructions;
         }
 
-        // 深度优先遍历所有可渲染的子节点
+        /// <summary>
+        /// 深度优先遍历所有可渲染的子节点
+        /// </summary>
+        /// <param name="canvas"></param>
         private void GetRenderabledGraphics(Canvas canvas)
         {
             var renderOrder = 0;
             GetRenderabledGraphics(canvas.gameObject, canvas, renderOrder);
         }
 
-        // 获得渲染列表
+        /// <summary>
+        /// 获得渲染列表
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <param name="canvas"></param>
+        /// <param name="renderOrder"></param>
+        /// <returns></returns>
         private int GetRenderabledGraphics(GameObject gameObject, Canvas canvas, int renderOrder)
         {
             if (gameObject.activeInHierarchy)
@@ -212,7 +253,11 @@ namespace SimpleX
             return renderOrder;
         }
 
-        // 是否会被渲染
+        /// <summary>
+        /// 是否会被渲染
+        /// </summary>
+        /// <param name="graphic"></param>
+        /// <returns></returns>
         private bool IsRenderabledGraphic(MaskableGraphic graphic)
         {
             if (graphic == null)
@@ -255,8 +300,12 @@ namespace SimpleX
             return true;
         }
 
-        // 获取alpha值（含CanvasGroup的影响）
-        // 在网上很多资料中，Graphic的color.a是否为0是会影响合批的, 但（在2020.3中）测试发现其实并没有影响，仅CanvasGroup的alpha值会影响合批
+        /// <summary>
+        /// 获取alpha值（含CanvasGroup的影响）
+        /// 在网上很多资料中，Graphic的color.a是否为0是会影响合批的, 但（在2020.3中）测试发现其实并没有影响，仅CanvasGroup的alpha值会影响合批
+        /// </summary>
+        /// <param name="graphic"></param>
+        /// <returns></returns>
         private float GetLossyAlpha(MaskableGraphic graphic)
         {
             var alpha = 1.0f; //graphic.color.a对合批没有影响
@@ -283,6 +332,11 @@ namespace SimpleX
             return alpha;
         }
 
+        /// <summary>
+        /// 分析
+        /// </summary>
+        /// <param name="canvas"></param>
+        /// <param name="instructions"></param>
         private void Analysis(Canvas canvas, List<KInstruction> instructions)
         {
             for (int i=0; i<instructions.Count-1; i++)
@@ -305,7 +359,10 @@ namespace SimpleX
             Batch(canvas, instructions);
         }
 
-        // 排序
+        /// <summary>
+        /// 对渲染指令列表进行排序
+        /// </summary>
+        /// <param name="instructions"></param>
         private void Sort(List<KInstruction> instructions)
         {
             instructions.Sort((a, b) => {
@@ -323,6 +380,12 @@ namespace SimpleX
             });
         }
 
+        /// <summary>
+        /// 对两个渲染指令排序
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         private int Sort(KInstruction a, KInstruction b)
         {
             if (EditorApplication.isPlaying)
@@ -332,7 +395,13 @@ namespace SimpleX
 
             return SortInEditorMode(a, b);
         }
-        
+
+        /// <summary>
+        /// 在编辑模式下，对两个渲染指令排序
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         private int SortInEditorMode(KInstruction a, KInstruction b)
         {
             // 按材质ID升序
@@ -364,7 +433,13 @@ namespace SimpleX
             // 按renderOrder升序
             return (a.renderOrder < b.renderOrder) ? -1 : 1;
         }
-        
+
+        /// <summary>
+        /// 在运行模式下，对两个渲染指令排序
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         private int SortInPlayMode(KInstruction a, KInstruction b)
         {
             // 按材质ID升序
@@ -384,6 +459,11 @@ namespace SimpleX
             return (a.renderOrder < b.renderOrder) ? -1 : 1;
         }
 
+        /// <summary>
+        /// 合批
+        /// </summary>
+        /// <param name="canvas"></param>
+        /// <param name="instructions"></param>
         private void Batch(Canvas canvas, List<KInstruction> instructions)
         {
             foreach (var ins in instructions)
@@ -393,6 +473,12 @@ namespace SimpleX
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="canvas"></param>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         private KBatch AllocBatch(Canvas canvas, KInstruction instruction)
         {
             if (batches.Count == 0)
@@ -409,6 +495,11 @@ namespace SimpleX
             return batch;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="canvas"></param>
+        /// <returns></returns>
         private KBatch AllocBatch(Canvas canvas)
         {
             var batch = new KBatch(canvas);
@@ -417,6 +508,11 @@ namespace SimpleX
             return batch;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="transform"></param>
+        /// <returns></returns>
         private RectMask2D GetRectMask2D(Transform transform)
         {
             var rectmask2d = transform.GetComponent<RectMask2D>();
@@ -434,6 +530,10 @@ namespace SimpleX
             return rectmask2d;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graphic"></param>
         private void RegisterGraphicDirtyHandlers(Graphic graphic)
         {
             graphic.RegisterDirtyLayoutCallback(OnGraphicLayoutDirtyHandler);
@@ -441,6 +541,10 @@ namespace SimpleX
             graphic.RegisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="graphic"></param>
         private void UnregisterGraphicDirtyHandlers(Graphic graphic)
         {
             graphic.UnregisterDirtyLayoutCallback(OnGraphicLayoutDirtyHandler);
@@ -448,18 +552,27 @@ namespace SimpleX
             graphic.UnregisterDirtyMaterialCallback(OnGraphicMaterialDirtyHandler);
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
         private void OnGraphicLayoutDirtyHandler()
         {
             // Debug.Log("OnGraphicLayoutDirtyHandler");
             OnDirty?.Invoke();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void OnGraphicVertexesDirtyHandler()
         {
             // Debug.Log("OnGraphicVertexesDirtyHandler");
             OnDirty?.Invoke();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void OnGraphicMaterialDirtyHandler()
         {
             // Debug.Log("OnGraphicMaterialDirtyHandler");

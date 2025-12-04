@@ -3,12 +3,30 @@ using UnityEngine;
 
 namespace SimpleX
 {
+    /// <summary>
+    /// 画布
+    /// </summary>
     public class KCanvas
     {
+        /// <summary>
+        /// Canvas
+        /// </summary>
         public Canvas canvas { get; } = null;
+        /// <summary>
+        /// 批次
+        /// </summary>
         public List<KBatch> batches { get; } = new List<KBatch>();
+        /// <summary>
+        /// 
+        /// </summary>
         public int instructionCount { get; private set; } = 0;
+        /// <summary>
+        /// 顶点数
+        /// </summary>
         public int vertexCount { get; private set; } = 0;
+        /// <summary>
+        /// 合批数
+        /// </summary>
         public int batchCount => batches.Count;
 
         public KCanvas(Canvas canvas)

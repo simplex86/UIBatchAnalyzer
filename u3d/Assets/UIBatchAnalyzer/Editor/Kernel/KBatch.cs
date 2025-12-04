@@ -9,25 +9,45 @@ namespace SimpleX
     /// </summary>
     public class KBatch : IRenderable
     {
-        // Canvas
+        /// <summary>
+        /// Canvas
+        /// </summary>
         public Canvas canvas { get; } = null;
-        // 子节点
+        /// <summary>
+        /// 子节点
+        /// </summary>
         public List<KInstruction> instructions { get; } = new List<KInstruction>();
-        // 材质
+        /// <summary>
+        /// 材质
+        /// </summary>
         public Material material => (instructions.Count > 0) ? instructions[0].material : null;
-        // 图集
+        /// <summary>
+        /// 图集
+        /// </summary>
         public SpriteAtlas spriteAtlas => (instructions.Count > 0) ? instructions[0].spriteAtlas : null;
-        // 纹理
+        /// <summary>
+        /// 纹理
+        /// </summary>
         public Texture texture => (instructions.Count > 0) ? instructions[0].texture : null;
-        // 深度
+        /// <summary>
+        /// 深度
+        /// </summary>
         public int depth => (instructions.Count > 0) ? instructions[0].depth : -1;
-        // Mask类型
+        /// <summary>
+        /// Mask类型
+        /// </summary>
         public EMaskType maskType => (instructions.Count > 0) ? instructions[0].maskType : EMaskType.None;
-        // 子控件数量
+        /// <summary>
+        /// 子控件数量
+        /// </summary>
         public int instructionCount => instructions.Count;
-        // 顶点数量
+        /// <summary>
+        /// 顶点数量
+        /// </summary>
         public int vertexCount { get; private set; } = 0;
-        // 最小渲染序号
+        /// <summary>
+        /// 最小渲染序号
+        /// </summary>
         public int minRenderOrder { get; private set; } = int.MaxValue;
 
         public KBatch(Canvas canvas)
@@ -35,6 +55,10 @@ namespace SimpleX
             this.canvas = canvas;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="instruction"></param>
         public void Add(KInstruction instruction)
         {
             instructions.Add(instruction);
@@ -42,6 +66,11 @@ namespace SimpleX
             vertexCount += instruction.vertexCount;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         public bool Check(KInstruction instruction)
         {
             if (instructions.Count == 0) return true;

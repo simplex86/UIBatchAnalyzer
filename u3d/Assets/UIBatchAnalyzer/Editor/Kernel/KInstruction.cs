@@ -6,26 +6,77 @@ using UnityEngine.UI;
 
 namespace SimpleX
 {
+    /// <summary>
+    /// 蒙版类型
+    /// </summary>
     public enum EMaskType
     {
+        /// <summary>
+        /// 不确定
+        /// </summary>
         None,
+        /// <summary>
+        /// 
+        /// </summary>
         Mask,
+        /// <summary>
+        /// 
+        /// </summary>
         Unmask,
     }
     
+    /// <summary>
+    /// 渲染指令
+    /// </summary>
     public class KInstruction : IRenderable
     {
+        /// <summary>
+        /// 渲染顺序
+        /// </summary>
         public int renderOrder { get; } = 0;
+        /// <summary>
+        /// 底层UI
+        /// </summary>
         public KInstruction bottom { get; private set; } = null;
+        /// <summary>
+        /// 深度
+        /// </summary>
         public int depth { get; private set; } = 0;
+        /// <summary>
+        /// 
+        /// </summary>
         public GameObject gameObject => (graphic == null) ? null : graphic.gameObject;
+        /// <summary>
+        /// 
+        /// </summary>
         public string name => (graphic == null) ? string.Empty : graphic.name;
+        /// <summary>
+        /// 
+        /// </summary>
         public KMesh mesh { get; } = null;
+        /// <summary>
+        /// 材质
+        /// </summary>
         public Material material { get; } = null;
+        /// <summary>
+        /// 纹理
+        /// </summary>
         public Texture texture => (materialTexture == null) ? graphicTexture : materialTexture;
+        /// <summary>
+        /// 图集
+        /// </summary>
         public SpriteAtlas spriteAtlas { get; } = null;
+        /// <summary>
+        /// 蒙版类型
+        /// </summary>
         public EMaskType maskType { get; } = EMaskType.None;
+        /// <summary>
+        /// 
+        /// </summary>
         public RectMask2D rectmask2d { get; } = null;
+        /// <summary>
+        /// 顶点数
+        /// </summary>
         public int vertexCount => (mesh == null) ? 0 : mesh.vertexCount;
         
         private MaskableGraphic graphic = null;
@@ -64,20 +115,31 @@ namespace SimpleX
             this.rectmask2d = rectmask2d;
         }
 
-        // 判断mesh是否有覆盖
+        /// <summary>
+        /// 判断mesh是否有覆盖
+        /// </summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         public bool MeshOverlap(KInstruction instruction)
         {
             return mesh.Overlap(instruction.mesh);
         }
 
-        // 设置底层UI
+        /// <summary>
+        /// 设置底层UI
+        /// </summary>
+        /// <param name="instruction"></param>
         public void SetBottom(KInstruction instruction)
         {
             bottom = instruction;
             depth = CheckBatch(instruction) ? instruction.depth : instruction.depth + 1;
         }
 
-        // 检查是否可以和另一个UI节点合批
+        /// <summary>
+        /// 检查是否可以和另一个UI节点合批
+        /// </summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         public bool CheckBatch(KInstruction instruction)
         {
             if (EditorApplication.isPlaying)
@@ -88,6 +150,11 @@ namespace SimpleX
             return CheckBatchInEditorMode(instruction);
         }
 
+        /// <summary>
+        /// 在编辑模式下检查合批
+        /// </summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         private bool CheckBatchInEditorMode(KInstruction instruction)
         {
             // 不同rectmask2d不能合
@@ -126,6 +193,11 @@ namespace SimpleX
             return true;
         }
 
+        /// <summary>
+        /// 在运行模式下检查合批
+        /// </summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         private bool CheckBatchInPlayMode(KInstruction instruction)
         {
             // 不同rectmask2d不能合
@@ -152,13 +224,23 @@ namespace SimpleX
             return true;
         }
 
-        // 获取UnMask阶段的Material
+        /// <summary>
+        /// 获取Unmask阶段的Material
+        /// </summary>
+        /// <param name="mask"></param>
+        /// <returns></returns>
         private Material GetUnmaskMaterial(Mask mask)
         {
             var unmaskMaterial = mask.GetType().GetField("m_UnmaskMaterial", BindingFlags.NonPublic | BindingFlags.Instance);
             return unmaskMaterial.GetValue(mask) as Material;
         }
 
+        /// <summary>
+        /// 判断rectmask2d是否可以合批
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
         private bool IsBatchableRectMask2D(RectMask2D a, RectMask2D b)
         {
             if ((a != null && b == null) || (a == null && b != null))
@@ -210,6 +292,11 @@ namespace SimpleX
             return true;
         }
 
+        /// <summary>
+        /// 判断position.z是否为0
+        /// </summary>
+        /// <param name="instruction"></param>
+        /// <returns></returns>
         private bool IsZeroPZ(KInstruction instruction)
         {
             foreach (var v in mesh.triangles)

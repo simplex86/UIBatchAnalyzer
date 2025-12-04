@@ -3,9 +3,18 @@ using UnityEngine;
 
 namespace SimpleX
 {
+    /// <summary>
+    /// 网格
+    /// </summary>
     public class KMesh
     {
+        /// <summary>
+        /// 三角形列表
+        /// </summary>
         public List<KTriangle> triangles { get; } = new List<KTriangle>();
+        /// <summary>
+        /// 顶点数
+        /// </summary>
         public int vertexCount { get; private set; } = 0;
 
         private Vector3 position = Vector3.zero;
@@ -19,6 +28,10 @@ namespace SimpleX
             scale = transform.lossyScale;
         }
 
+        /// <summary>
+        /// 填充
+        /// </summary>
+        /// <param name="mesh"></param>
         public void Fill(Mesh mesh)
         {
             triangles.Clear();
@@ -39,6 +52,11 @@ namespace SimpleX
             vertexCount = mesh.vertexCount;
         }
 
+        /// <summary>
+        /// 判断两个网格是否有重叠
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
         public bool Overlap(KMesh other)
         {
             foreach (var t1 in triangles)

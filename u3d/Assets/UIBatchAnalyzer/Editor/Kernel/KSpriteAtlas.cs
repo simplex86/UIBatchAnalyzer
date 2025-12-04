@@ -3,34 +3,54 @@ using UnityEngine;
 using UnityEngine.U2D;
 using UnityEditor;
 
-public class KSpriteAtlas
+namespace SimpleX
 {
-    private static List<SpriteAtlas> list = new List<SpriteAtlas>(50);
-
-    public static void Load()
+    /// <summary>
+    /// 图集
+    /// </summary>
+    public class KSpriteAtlas
     {
-        Clear();
+        /// <summary>
+        /// 图集列表
+        /// </summary>
+        private static List<SpriteAtlas> list = new List<SpriteAtlas>(50);
 
-        var guids = AssetDatabase.FindAssets("t:spriteatlas");
-        foreach (var guid in guids)
+        /// <summary>
+        /// 加载
+        /// </summary>
+        public static void Load()
         {
-            var path = AssetDatabase.GUIDToAssetPath(guid);
-            var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(path);
-            list.Add(atlas);
-        }
-    }
+            Clear();
 
-    public static SpriteAtlas GetSpriteAtlas(Sprite sprite)
-    {
-        foreach (var atlas in list)
+            var guids = AssetDatabase.FindAssets("t:spriteatlas");
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(path);
+                list.Add(atlas);
+            }
+        }
+
+        /// <summary>
+        /// 获取包含指定图片的图集
+        /// </summary>
+        /// <param name="sprite"></param>
+        /// <returns></returns>
+        public static SpriteAtlas GetSpriteAtlas(Sprite sprite)
         {
-            if (atlas.CanBindTo(sprite)) return atlas;
+            foreach (var atlas in list)
+            {
+                if (atlas.CanBindTo(sprite)) return atlas;
+            }
+            return null;
         }
-        return null;
-    }
 
-    public static void Clear()
-    {
-        list.Clear();
+        /// <summary>
+        /// 清空
+        /// </summary>
+        public static void Clear()
+        {
+            list.Clear();
+        }
     }
 }
